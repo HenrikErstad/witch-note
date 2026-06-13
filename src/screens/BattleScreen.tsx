@@ -13,13 +13,13 @@ import {
   Settings,
   Note,
   Clef,
-  CLEF_NAME,
   samePitch,
   semitone,
   nextRound,
   pianoRange,
 } from '../music';
 import { playSemitone } from '../sound';
+import { useT } from '../i18n';
 
 interface Props {
   settings: Settings;
@@ -35,6 +35,7 @@ const PLAYER_OPTIONS = [2, 3, 4, 5, 6];
 export default function BattleScreen({ settings }: Props) {
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
+  const t = useT();
 
   const [phase, setPhase] = useState<Phase>('setup');
   const [numPlayers, setNumPlayers] = useState(2);
@@ -138,7 +139,7 @@ export default function BattleScreen({ settings }: Props) {
   if (phase === 'setup') {
     return (
       <View style={styles.centered}>
-        <Text style={styles.heading}>How many players?</Text>
+        <Text style={styles.heading}>{t('battle.players')}</Text>
         <View style={styles.playerRow}>
           {PLAYER_OPTIONS.map((n) => {
             const active = n === numPlayers;
@@ -161,11 +162,10 @@ export default function BattleScreen({ settings }: Props) {
           })}
         </View>
         <Text style={styles.note}>
-          Each player gets {TURN_SECONDS} seconds to name as many notes as they
-          can. Scores are revealed at the end.
+          {t('battle.setupNote', { s: TURN_SECONDS })}
         </Text>
         <Pressable onPress={startBattle} style={styles.primaryBtn}>
-          <Text style={styles.primaryBtnText}>Start battle</Text>
+          <Text style={styles.primaryBtnText}>{t('battle.start')}</Text>
         </Pressable>
       </View>
     );
@@ -174,14 +174,15 @@ export default function BattleScreen({ settings }: Props) {
   if (phase === 'ready') {
     return (
       <View style={styles.centered}>
-        <Text style={styles.playerTag}>Player {current + 1}</Text>
-        <Text style={styles.heading}>Get ready!</Text>
+        <Text style={styles.playerTag}>
+          {t('battle.player', { n: current + 1 })}
+        </Text>
+        <Text style={styles.heading}>{t('battle.getReady')}</Text>
         <Text style={styles.note}>
-          Pass the device to player {current + 1}. You'll have {TURN_SECONDS}{' '}
-          seconds once you tap start.
+          {t('battle.readyNote', { n: current + 1, s: TURN_SECONDS })}
         </Text>
         <Pressable onPress={startTurn} style={styles.primaryBtn}>
-          <Text style={styles.primaryBtnText}>Start turn</Text>
+          <Text style={styles.primaryBtnText}>{t('battle.startTurn')}</Text>
         </Pressable>
       </View>
     );
@@ -199,7 +200,7 @@ export default function BattleScreen({ settings }: Props) {
     );
     return (
       <ScrollView contentContainerStyle={styles.resultsContent}>
-        <Text style={styles.heading}>Results</Text>
+        <Text style={styles.heading}>{t('battle.results')}</Text>
         {results.map((r, i) => {
           const isWinner = i === best && r.total > 0;
           return (
@@ -208,24 +209,26 @@ export default function BattleScreen({ settings }: Props) {
               style={[styles.resultCard, isWinner && styles.resultCardWin]}
             >
               <View style={styles.resultHeader}>
-                <Text style={styles.resultPlayer}>Player {i + 1}</Text>
+                <Text style={styles.resultPlayer}>
+                  {t('battle.player', { n: i + 1 })}
+                </Text>
                 {isWinner && <Text style={styles.crown}>{'👑'}</Text>}
               </View>
               <View style={styles.resultStats}>
                 <View style={styles.stat}>
                   <Text style={styles.statValue}>{r.correct}</Text>
-                  <Text style={styles.statLabel}>notes correct</Text>
+                  <Text style={styles.statLabel}>{t('battle.notesCorrect')}</Text>
                 </View>
                 <View style={styles.stat}>
                   <Text style={styles.statValue}>{accuracy(r)}%</Text>
-                  <Text style={styles.statLabel}>accuracy</Text>
+                  <Text style={styles.statLabel}>{t('battle.accuracy')}</Text>
                 </View>
               </View>
             </View>
           );
         })}
         <Pressable onPress={() => setPhase('setup')} style={styles.primaryBtn}>
-          <Text style={styles.primaryBtnText}>Play again</Text>
+          <Text style={styles.primaryBtnText}>{t('battle.playAgain')}</Text>
         </Pressable>
       </ScrollView>
     );
@@ -240,7 +243,9 @@ export default function BattleScreen({ settings }: Props) {
     <View style={styles.playRoot}>
       <View style={styles.top}>
         <View style={styles.playHeader}>
-          <Text style={styles.playPlayer}>Player {current + 1}</Text>
+          <Text style={styles.playPlayer}>
+            {t('battle.player', { n: current + 1 })}
+          </Text>
           <Text
             style={[styles.timer, timeLeft <= 10 && styles.timerLow]}
           >
@@ -248,7 +253,9 @@ export default function BattleScreen({ settings }: Props) {
           </Text>
         </View>
 
-        <Text style={styles.clefLabel}>{CLEF_NAME[round.clef]} clef</Text>
+        <Text style={styles.clefLabel}>
+          {t(round.clef === 'treble' ? 'clef.trebleFull' : 'clef.bassFull')}
+        </Text>
 
         <View style={styles.card}>
           <Staff
@@ -271,6 +278,7 @@ export default function BattleScreen({ settings }: Props) {
           blackKeysActive={settings.difficulty !== 'easy'}
           enharmonicWhites={settings.difficulty === 'expert'}
           accidentalStyle={round.note.accidental === 'flat' ? 'flat' : 'sharp'}
+          german={settings.germanNotation}
           keyHeight={keyHeight}
         />
       </View>

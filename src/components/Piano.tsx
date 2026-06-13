@@ -20,6 +20,7 @@ interface Props {
   blackKeysActive: boolean; // are black keys part of the quiz?
   enharmonicWhites?: boolean; // also label white keys with B#/Cb/E#/Fb
   accidentalStyle?: 'sharp' | 'flat'; // how to spell/label black keys
+  german?: boolean; // name B-natural "H" (German/Norwegian)
   keyHeight?: number;
 }
 
@@ -33,14 +34,15 @@ const WRONG = '#ff3b30';
 // E-F semitone pairs) get an enharmonic name in the matching sharp/flat mode.
 function whiteEnharmonic(
   letter: Note['letter'],
-  style: 'sharp' | 'flat'
+  style: 'sharp' | 'flat',
+  german: boolean
 ): string | null {
   if (style === 'sharp') {
-    if (letter === 'C') return pitchClassName({ letter: 'B', octave: 0, accidental: 'sharp' });
-    if (letter === 'F') return pitchClassName({ letter: 'E', octave: 0, accidental: 'sharp' });
+    if (letter === 'C') return pitchClassName({ letter: 'B', octave: 0, accidental: 'sharp' }, german);
+    if (letter === 'F') return pitchClassName({ letter: 'E', octave: 0, accidental: 'sharp' }, german);
   } else {
-    if (letter === 'E') return pitchClassName({ letter: 'F', octave: 0, accidental: 'flat' });
-    if (letter === 'B') return pitchClassName({ letter: 'C', octave: 0, accidental: 'flat' });
+    if (letter === 'E') return pitchClassName({ letter: 'F', octave: 0, accidental: 'flat' }, german);
+    if (letter === 'B') return pitchClassName({ letter: 'C', octave: 0, accidental: 'flat' }, german);
   }
   return null;
 }
@@ -55,6 +57,7 @@ export default function Piano({
   blackKeysActive,
   enharmonicWhites = false,
   accidentalStyle = 'sharp',
+  german = false,
   keyHeight = 180,
 }: Props) {
   const whites: Note[] = [];
@@ -81,8 +84,9 @@ export default function Piano({
             fb === 'correct' ? CORRECT : fb === 'wrong' ? WRONG : '#ffffff';
           const labelColor = fb ? '#ffffff' : '#3a3a3c';
           const enh = enharmonicWhites
-            ? whiteEnharmonic(note.letter, accidentalStyle)
+            ? whiteEnharmonic(note.letter, accidentalStyle, german)
             : null;
+          const letterText = german && note.letter === 'B' ? 'H' : note.letter;
           return (
             <Pressable
               key={`w${idx}`}
@@ -93,7 +97,7 @@ export default function Piano({
               {showLabels && (
                 <View style={styles.whiteLabelWrap}>
                   <Text style={[styles.whiteLabel, { color: labelColor }]}>
-                    {note.letter}
+                    {letterText}
                     <Text style={styles.octave}>{note.octave}</Text>
                   </Text>
                   {enh && (
@@ -139,7 +143,7 @@ export default function Piano({
             >
               {showLabels && blackKeysActive && (
                 <Text style={styles.blackLabel}>
-                  {pitchClassName(blackNote)}
+                  {pitchClassName(blackNote, german)}
                   <Text style={styles.blackOctave}>{blackNote.octave}</Text>
                 </Text>
               )}

@@ -13,7 +13,6 @@ import {
   Settings,
   Note,
   Clef,
-  CLEF_NAME,
   samePitch,
   semitone,
   noteName,
@@ -22,12 +21,14 @@ import {
   pianoRange,
 } from '../music';
 import { playSemitone } from '../sound';
+import { useT } from '../i18n';
 
 interface Props {
   settings: Settings;
 }
 
 export default function PracticeScreen({ settings }: Props) {
+  const t = useT();
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
   const [round, setRound] = useState<{ clef: Clef; note: Note }>(() =>
@@ -85,13 +86,17 @@ export default function PracticeScreen({ settings }: Props) {
   const lineGap = landscape ? 9 : 14;
   const keyHeight = Math.max(96, Math.min(180, Math.round(height * 0.32)));
 
-  let banner = 'Which note is this?';
+  let banner = t('practice.prompt');
   let bannerColor = '#8e8e93';
   if (feedback?.kind === 'correct') {
-    banner = `Correct — ${noteName(round.note)}`;
+    banner = t('practice.correct', {
+      note: noteName(round.note, settings.germanNotation),
+    });
     bannerColor = '#34c759';
   } else if (feedback?.kind === 'wrong') {
-    banner = `That's ${pitchClassName(feedback.note)} — try again`;
+    banner = t('practice.wrong', {
+      note: pitchClassName(feedback.note, settings.germanNotation),
+    });
     bannerColor = '#ff3b30';
   }
 
@@ -102,7 +107,9 @@ export default function PracticeScreen({ settings }: Props) {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.top}>
-        <Text style={styles.clefLabel}>{CLEF_NAME[round.clef]} clef</Text>
+        <Text style={styles.clefLabel}>
+          {t(round.clef === 'treble' ? 'clef.trebleFull' : 'clef.bassFull')}
+        </Text>
 
         <View style={styles.card}>
           <Staff
@@ -121,13 +128,13 @@ export default function PracticeScreen({ settings }: Props) {
             style={styles.hearBtn}
             hitSlop={8}
           >
-            <Text style={styles.hearBtnText}>{'♪'} Hear note</Text>
+            <Text style={styles.hearBtnText}>{t('practice.hear')}</Text>
           </Pressable>
         )}
 
         <View style={styles.scoreRow}>
-          <Text style={styles.scoreText}>Score: {score}</Text>
-          <Text style={styles.scoreText}>Streak: {streak}</Text>
+          <Text style={styles.scoreText}>{t('practice.score', { n: score })}</Text>
+          <Text style={styles.scoreText}>{t('practice.streak', { n: streak })}</Text>
         </View>
       </View>
 
@@ -142,6 +149,7 @@ export default function PracticeScreen({ settings }: Props) {
           blackKeysActive={settings.difficulty !== 'easy'}
           enharmonicWhites={settings.difficulty === 'expert'}
           accidentalStyle={round.note.accidental === 'flat' ? 'flat' : 'sharp'}
+          german={settings.germanNotation}
           keyHeight={keyHeight}
         />
       </View>

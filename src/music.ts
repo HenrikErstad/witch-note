@@ -3,6 +3,8 @@
 // The letter+octave fix the position on the staff; the accidental adds a glyph
 // and shifts the sounding pitch (and which piano key it maps to).
 
+import type { LangSetting } from './i18n';
+
 export type Letter = 'C' | 'D' | 'E' | 'F' | 'G' | 'A' | 'B';
 export type Clef = 'treble' | 'bass';
 export type Accidental = 'natural' | 'sharp' | 'flat';
@@ -74,14 +76,28 @@ export function noteLabel(n: Note): string {
   return `${n.letter}${n.octave}`;
 }
 
-// Display name including any accidental, e.g. "C#4" / "Db5".
-export function noteName(n: Note): string {
-  return `${n.letter}${ACC_SYMBOL[n.accidental ?? 'natural']}${n.octave}`;
+// Pitch-class string. With `german`, the B letter follows the German/Norwegian
+// convention: B-natural is "H", B-flat is "B", B-sharp is "H#".
+function pitchClassCore(
+  letter: Letter,
+  accidental: Accidental,
+  german: boolean
+): string {
+  if (german && letter === 'B') {
+    if (accidental === 'flat') return 'B';
+    return `H${ACC_SYMBOL[accidental]}`;
+  }
+  return `${letter}${ACC_SYMBOL[accidental]}`;
 }
 
-// Short display name without the octave, e.g. "C#".
-export function pitchClassName(n: Note): string {
-  return `${n.letter}${ACC_SYMBOL[n.accidental ?? 'natural']}`;
+// Short display name without the octave, e.g. "C#" (or "H" in German naming).
+export function pitchClassName(n: Note, german = false): string {
+  return pitchClassCore(n.letter, n.accidental ?? 'natural', german);
+}
+
+// Display name including the octave, e.g. "C#4" / "Db5" / "H4".
+export function noteName(n: Note, german = false): string {
+  return `${pitchClassName(n, german)}${n.octave}`;
 }
 
 // The note that sits on the *middle line* of each clef's staff.
@@ -133,7 +149,9 @@ export interface Settings {
   difficulty: Difficulty; // which accidentals to include
   sound: boolean; // play the pitch when a key is tapped
   hardcore: boolean; // hide the note names on the piano keys
+  germanNotation: boolean; // name B-natural "H" (German/Norwegian convention)
   rotation: RotationMode; // lock to portrait/landscape, or follow the device
+  language: LangSetting; // 'system' follows the device locale
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -146,7 +164,9 @@ export const DEFAULT_SETTINGS: Settings = {
   difficulty: 'easy',
   sound: true,
   hardcore: false,
+  germanNotation: false,
   rotation: 'auto',
+  language: 'system',
 };
 
 export function clefRangeBounds(s: Settings, clef: Clef): { min: number; max: number } {

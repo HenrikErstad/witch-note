@@ -16,18 +16,11 @@ import {
   noteLabel,
   clefScope,
 } from '../music';
+import { useT, LangSetting, resolveLang } from '../i18n';
 
-const ROTATION_OPTIONS: { value: RotationMode; label: string }[] = [
-  { value: 'portrait', label: 'Portrait' },
-  { value: 'landscape', label: 'Landscape' },
-  { value: 'auto', label: 'Auto' },
-];
-
-const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
-  { value: 'easy', label: 'Easy' },
-  { value: 'intermediate', label: 'Interm.' },
-  { value: 'expert', label: 'Expert' },
-];
+const ROTATION_VALUES: RotationMode[] = ['portrait', 'landscape', 'auto'];
+const DIFFICULTY_VALUES: Difficulty[] = ['easy', 'intermediate', 'expert'];
+const LANGUAGE_VALUES: LangSetting[] = ['system', 'en', 'nb'];
 
 function Segmented<T extends string>({
   value,
@@ -110,6 +103,7 @@ function ClefCard({
   set: (patch: Partial<Settings>) => void;
   toggle: (clef: Clef, value: boolean) => void;
 }) {
+  const t = useT();
   const enabled = clef === 'treble' ? settings.treble : settings.bass;
   const scope = clefScope(clef);
   const min = clef === 'treble' ? settings.trebleMin : settings.bassMin;
@@ -122,18 +116,18 @@ function ClefCard({
   return (
     <>
       <Text style={styles.sectionTitle}>
-        {clef === 'treble' ? 'Treble' : 'Bass'} clef
+        {t(clef === 'treble' ? 'clef.trebleFull' : 'clef.bassFull')}
       </Text>
       <View style={styles.card}>
         <View style={styles.row}>
-          <Text style={styles.rowLabel}>Enabled</Text>
+          <Text style={styles.rowLabel}>{t('settings.enabled')}</Text>
           <Switch value={enabled} onValueChange={(v) => toggle(clef, v)} />
         </View>
         {enabled && (
           <>
             <View style={styles.divider} />
             <View style={styles.row}>
-              <Text style={styles.rowLabel}>Lowest note</Text>
+              <Text style={styles.rowLabel}>{t('settings.lowest')}</Text>
               <Stepper
                 value={noteLabel(noteFromIndex(min))}
                 canDec={min > scope.lo}
@@ -144,7 +138,7 @@ function ClefCard({
             </View>
             <View style={styles.divider} />
             <View style={styles.row}>
-              <Text style={styles.rowLabel}>Highest note</Text>
+              <Text style={styles.rowLabel}>{t('settings.highest')}</Text>
               <Stepper
                 value={noteLabel(noteFromIndex(max))}
                 canDec={max > min}
@@ -161,6 +155,8 @@ function ClefCard({
 }
 
 export default function SettingsScreen({ settings, onChange }: Props) {
+  const t = useT();
+
   function set(patch: Partial<Settings>) {
     onChange({ ...settings, ...patch });
   }
@@ -176,64 +172,85 @@ export default function SettingsScreen({ settings, onChange }: Props) {
     <ScrollView contentContainerStyle={styles.content}>
       <ClefCard settings={settings} clef="treble" set={set} toggle={toggleClef} />
       <ClefCard settings={settings} clef="bass" set={set} toggle={toggleClef} />
-      <Text style={styles.hint}>
-        Each clef draws notes within its own range (capped to two ledger lines
-        beyond the staff). At least one clef must stay on.
-      </Text>
+      <Text style={styles.hint}>{t('settings.rangeHint')}</Text>
 
-      <Text style={styles.sectionTitle}>Difficulty</Text>
+      <Text style={styles.sectionTitle}>{t('settings.difficulty')}</Text>
       <View style={styles.card}>
         <View style={styles.colRow}>
-          <Text style={styles.rowLabel}>Notes</Text>
+          <Text style={styles.rowLabel}>{t('settings.notes')}</Text>
           <Segmented
             value={settings.difficulty}
             onChange={(v) => set({ difficulty: v })}
-            options={DIFFICULTY_OPTIONS}
+            options={DIFFICULTY_VALUES.map((v) => ({
+              value: v,
+              label: t(`difficulty.${v}`),
+            }))}
           />
         </View>
         <View style={styles.divider} />
         <View style={styles.row}>
-          <Text style={styles.rowLabel}>Hardcore mode</Text>
+          <Text style={styles.rowLabel}>{t('settings.hardcore')}</Text>
           <Switch
             value={settings.hardcore}
             onValueChange={(v) => set({ hardcore: v })}
           />
         </View>
       </View>
-      <Text style={styles.hint}>
-        Easy: naturals only. Intermediate: adds sharps & flats. Expert: also adds
-        B♯, C♭, E♯, F♭. Hardcore hides the note names on the keys.
-      </Text>
+      <Text style={styles.hint}>{t('settings.difficultyHint')}</Text>
 
-      <Text style={styles.sectionTitle}>Sound</Text>
+      <Text style={styles.sectionTitle}>{t('settings.sound')}</Text>
       <View style={styles.card}>
         <View style={styles.row}>
-          <Text style={styles.rowLabel}>Play note sound</Text>
+          <Text style={styles.rowLabel}>{t('settings.playSound')}</Text>
           <Switch
             value={settings.sound}
             onValueChange={(v) => set({ sound: v })}
           />
         </View>
       </View>
-      <Text style={styles.hint}>
-        Plays the pitch when a new note appears, and shows a "Hear note" button.
-      </Text>
+      <Text style={styles.hint}>{t('settings.soundHint')}</Text>
 
-      <Text style={styles.sectionTitle}>Orientation</Text>
+      <Text style={styles.sectionTitle}>{t('settings.orientation')}</Text>
       <View style={styles.card}>
         <View style={styles.colRow}>
-          <Text style={styles.rowLabel}>Screen rotation</Text>
+          <Text style={styles.rowLabel}>{t('settings.rotation')}</Text>
           <Segmented
             value={settings.rotation}
             onChange={(v) => set({ rotation: v })}
-            options={ROTATION_OPTIONS}
+            options={ROTATION_VALUES.map((v) => ({
+              value: v,
+              label: t(`rotation.${v}`),
+            }))}
           />
         </View>
       </View>
-      <Text style={styles.hint}>
-        Portrait and Landscape lock the screen; Auto follows how you tilt the
-        device.
-      </Text>
+      <Text style={styles.hint}>{t('settings.rotationHint')}</Text>
+
+      <Text style={styles.sectionTitle}>{t('settings.language')}</Text>
+      <View style={styles.card}>
+        <View style={styles.colRow}>
+          <Text style={styles.rowLabel}>{t('settings.language')}</Text>
+          <Segmented
+            value={settings.language}
+            onChange={(v) =>
+              set({ language: v, germanNotation: resolveLang(v) === 'nb' })
+            }
+            options={LANGUAGE_VALUES.map((v) => ({
+              value: v,
+              label: t(`language.${v}`),
+            }))}
+          />
+        </View>
+        <View style={styles.divider} />
+        <View style={styles.row}>
+          <Text style={styles.rowLabel}>{t('settings.germanNotation')}</Text>
+          <Switch
+            value={settings.germanNotation}
+            onValueChange={(v) => set({ germanNotation: v })}
+          />
+        </View>
+      </View>
+      <Text style={styles.hint}>{t('settings.germanNotationHint')}</Text>
     </ScrollView>
   );
 }

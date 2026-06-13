@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { useT } from '../i18n';
 
 interface Props {
   onPractice: () => void;
@@ -7,12 +8,13 @@ interface Props {
 }
 
 export default function HomeScreen({ onPractice, onBattle }: Props) {
+  const t = useT();
   return (
     <View style={styles.root}>
       <View style={styles.hero}>
         <Text style={styles.logo}>{'♫'}</Text>
-        <Text style={styles.title}>Note Trainer</Text>
-        <Text style={styles.subtitle}>Learn to read music at a glance.</Text>
+        <Text style={styles.title}>{t('app.name')}</Text>
+        <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
       </View>
 
       <View style={styles.buttons}>
@@ -24,8 +26,8 @@ export default function HomeScreen({ onPractice, onBattle }: Props) {
             pressed && styles.pressed,
           ]}
         >
-          <Text style={styles.buttonTitle}>Practice mode</Text>
-          <Text style={styles.buttonSub}>Identify notes at your own pace</Text>
+          <Text style={styles.buttonTitle}>{t('home.practice')}</Text>
+          <Text style={styles.buttonSub}>{t('home.practiceSub')}</Text>
         </Pressable>
 
         <Pressable
@@ -36,8 +38,8 @@ export default function HomeScreen({ onPractice, onBattle }: Props) {
             pressed && styles.pressed,
           ]}
         >
-          <Text style={styles.buttonTitle}>Battle mode</Text>
-          <Text style={styles.buttonSub}>Race the clock for a high score</Text>
+          <Text style={styles.buttonTitle}>{t('home.battle')}</Text>
+          <Text style={styles.buttonSub}>{t('home.battleSub')}</Text>
         </Pressable>
       </View>
     </View>

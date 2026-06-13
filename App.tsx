@@ -12,6 +12,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { Settings } from './src/music';
 import { loadSettings, saveSettings } from './src/storage';
 import { initSound } from './src/sound';
+import { LangProvider, resolveLang, translate } from './src/i18n';
 import HomeScreen from './src/screens/HomeScreen';
 import PracticeScreen from './src/screens/PracticeScreen';
 import BattleScreen from './src/screens/BattleScreen';
@@ -21,11 +22,11 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 type Screen = 'home' | 'practice' | 'battle' | 'settings';
 
-const TITLES: Record<Screen, string> = {
-  home: 'Note Trainer',
-  practice: 'Practice mode',
-  battle: 'Battle mode',
-  settings: 'Settings',
+const TITLE_KEY: Record<Screen, string> = {
+  home: 'app.name',
+  practice: 'title.practice',
+  battle: 'title.battle',
+  settings: 'title.settings',
 };
 
 export default function App() {
@@ -84,27 +85,32 @@ export default function App() {
   // Settings gear shows on home and practice.
   const showSettingsButton = screen === 'home' || screen === 'practice';
 
+  const lang = resolveLang(settings.language);
+  const t = (key: string, params?: Record<string, string | number>) =>
+    translate(lang, key, params);
+
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
-        <StatusBar style="dark" />
-        <View style={styles.header}>
-          <View style={styles.headerSide}>
-            {backTarget && (
-              <Pressable onPress={() => setScreen(backTarget)} hitSlop={12}>
-                <Text style={styles.headerAction}>{'‹'} Back</Text>
-              </Pressable>
-            )}
+    <LangProvider value={lang}>
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
+          <StatusBar style="dark" />
+          <View style={styles.header}>
+            <View style={styles.headerSide}>
+              {backTarget && (
+                <Pressable onPress={() => setScreen(backTarget)} hitSlop={12}>
+                  <Text style={styles.headerAction}>{'‹'} {t('header.back')}</Text>
+                </Pressable>
+              )}
+            </View>
+            <Text style={styles.title}>{t(TITLE_KEY[screen])}</Text>
+            <View style={[styles.headerSide, styles.headerRight]}>
+              {showSettingsButton && (
+                <Pressable onPress={openSettings} hitSlop={12}>
+                  <Text style={styles.headerAction}>{t('header.settings')}</Text>
+                </Pressable>
+              )}
+            </View>
           </View>
-          <Text style={styles.title}>{TITLES[screen]}</Text>
-          <View style={[styles.headerSide, styles.headerRight]}>
-            {showSettingsButton && (
-              <Pressable onPress={openSettings} hitSlop={12}>
-                <Text style={styles.headerAction}>Settings</Text>
-              </Pressable>
-            )}
-          </View>
-        </View>
 
         <View style={styles.body}>
           {screen === 'home' && (
@@ -119,8 +125,9 @@ export default function App() {
             <SettingsScreen settings={settings} onChange={updateSettings} />
           )}
         </View>
-      </SafeAreaView>
-    </SafeAreaProvider>
+        </SafeAreaView>
+      </SafeAreaProvider>
+    </LangProvider>
   );
 }
 
