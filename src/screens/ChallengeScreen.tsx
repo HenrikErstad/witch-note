@@ -155,6 +155,9 @@ export default function ChallengeScreen({ settings }: Props) {
         <Pressable onPress={startTurn} style={styles.primaryBtn}>
           <Text style={styles.primaryBtnText}>{t('challenge.start')}</Text>
         </Pressable>
+        <Text style={styles.difficultyHint}>
+          {t('challenge.difficultyHint')}
+        </Text>
       </View>
     );
   }
@@ -260,6 +263,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 14,
     lineHeight: 21,
+  },
+  difficultyHint: {
+    fontSize: 13,
+    color: '#aeaeb2',
+    textAlign: 'center',
+    marginTop: 20,
   },
   recordBanner: {
     fontSize: 22,

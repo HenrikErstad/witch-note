@@ -25,6 +25,7 @@ const en: Dict = {
   'home.battleSub': 'Take turns against the clock',
 
   'challenge.intro': 'Name as many notes as you can in {s} seconds.',
+  'challenge.difficultyHint': 'Difficulty is changed in Settings (top right corner).',
   'challenge.best': 'Best ({level}): {correct} notes · {accuracy}%',
   'challenge.noRecord': 'No record on {level} yet — set one!',
   'challenge.start': 'Start challenge',
@@ -111,6 +112,7 @@ const nb: Dict = {
   'home.battleSub': 'Kjemp mot hverandre på tid',
 
   'challenge.intro': 'Navngi så mange noter som mulig på {s} sekunder.',
+  'challenge.difficultyHint': 'Vanskelighetsgrad endres i Innstillinger (øverst til høyre).',
   'challenge.best': 'Rekord ({level}): {correct} noter · {accuracy}%',
   'challenge.noRecord': 'Ingen rekord på {level} ennå — sett en!',
   'challenge.start': 'Start utfordring',

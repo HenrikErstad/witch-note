@@ -85,8 +85,9 @@ export default function App() {
   const backTarget: Screen | null =
     screen === 'settings' ? settingsFrom : screen === 'home' ? null : 'home';
 
-  // Settings gear shows on home and practice.
-  const showSettingsButton = screen === 'home' || screen === 'practice';
+  // Settings gear shows on home, practice and challenge.
+  const showSettingsButton =
+    screen === 'home' || screen === 'practice' || screen === 'challenge';
 
   const lang = resolveLang(settings.language);
   const t = (key: string, params?: Record<string, string | number>) =>
