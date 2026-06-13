@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Settings, DEFAULT_SETTINGS } from './music';
+import { Settings, DEFAULT_SETTINGS, clefScope } from './music';
 
-const KEY = 'note-trainer:settings:v1';
+const KEY = 'note-trainer:settings:v2';
 
 export async function loadSettings(): Promise<Settings> {
   try {
@@ -11,9 +11,25 @@ export async function loadSettings(): Promise<Settings> {
     // Merge so missing/new fields fall back to defaults.
     const merged: Settings = { ...DEFAULT_SETTINGS, ...parsed };
     if (!merged.treble && !merged.bass) merged.treble = true; // never leave both off
-    if (merged.minIndex > merged.maxIndex) {
-      merged.minIndex = DEFAULT_SETTINGS.minIndex;
-      merged.maxIndex = DEFAULT_SETTINGS.maxIndex;
+
+    // Keep each clef's range valid and within its scope.
+    const t = clefScope('treble');
+    if (
+      merged.trebleMin > merged.trebleMax ||
+      merged.trebleMin < t.lo ||
+      merged.trebleMax > t.hi
+    ) {
+      merged.trebleMin = DEFAULT_SETTINGS.trebleMin;
+      merged.trebleMax = DEFAULT_SETTINGS.trebleMax;
+    }
+    const b = clefScope('bass');
+    if (
+      merged.bassMin > merged.bassMax ||
+      merged.bassMin < b.lo ||
+      merged.bassMax > b.hi
+    ) {
+      merged.bassMin = DEFAULT_SETTINGS.bassMin;
+      merged.bassMax = DEFAULT_SETTINGS.bassMax;
     }
     return merged;
   } catch {

@@ -125,28 +125,59 @@ export type Difficulty = 'easy' | 'intermediate' | 'expert';
 export interface Settings {
   treble: boolean;
   bass: boolean;
-  minIndex: number; // inclusive, diatonic index of lowest note
-  maxIndex: number; // inclusive, diatonic index of highest note
+  // Each clef has its own range, bounded by that clef's ledger scope.
+  trebleMin: number;
+  trebleMax: number;
+  bassMin: number;
+  bassMax: number;
   difficulty: Difficulty; // which accidentals to include
   sound: boolean; // play the pitch when a key is tapped
   hardcore: boolean; // hide the note names on the piano keys
   rotation: RotationMode; // lock to portrait/landscape, or follow the device
 }
 
-// Reasonable absolute bounds for the range pickers.
-export const RANGE_FLOOR = noteIndex({ letter: 'C', octave: 2 }); // C2
-export const RANGE_CEIL = noteIndex({ letter: 'C', octave: 7 }); // C7
-
 export const DEFAULT_SETTINGS: Settings = {
   treble: true,
   bass: false,
-  minIndex: noteIndex({ letter: 'C', octave: 4 }), // middle C
-  maxIndex: noteIndex({ letter: 'C', octave: 6 }), // C6
+  trebleMin: noteIndex({ letter: 'C', octave: 4 }), // middle C
+  trebleMax: noteIndex({ letter: 'C', octave: 6 }), // C6
+  bassMin: noteIndex({ letter: 'C', octave: 2 }), // C2
+  bassMax: noteIndex({ letter: 'C', octave: 4 }), // middle C
   difficulty: 'easy',
   sound: true,
   hardcore: false,
   rotation: 'auto',
 };
+
+export function clefRangeBounds(s: Settings, clef: Clef): { min: number; max: number } {
+  return clef === 'treble'
+    ? { min: s.trebleMin, max: s.trebleMax }
+    : { min: s.bassMin, max: s.bassMax };
+}
+
+// A clef's effective range: the user's range clamped to the clef's scope.
+export function clefRange(s: Settings, clef: Clef): { lo: number; hi: number } {
+  const scope = clefScope(clef);
+  const { min, max } = clefRangeBounds(s, clef);
+  return { lo: Math.max(min, scope.lo), hi: Math.min(max, scope.hi) };
+}
+
+// The span of keys the on-screen keyboard must cover: the union of the ranges
+// of every enabled clef.
+export function pianoRange(s: Settings): { min: number; max: number } {
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (const clef of enabledClefs(s)) {
+    const r = clefRange(s, clef);
+    lo = Math.min(lo, r.lo);
+    hi = Math.max(hi, r.hi);
+  }
+  if (!isFinite(lo)) {
+    const scope = clefScope('treble');
+    return { min: scope.lo, max: scope.hi };
+  }
+  return { min: lo, max: hi };
+}
 
 export function enabledClefs(s: Settings): Clef[] {
   const clefs: Clef[] = [];
@@ -170,16 +201,16 @@ export function clefScope(clef: Clef): { lo: number; hi: number } {
 const SPLIT_INDEX = noteIndex({ letter: 'G', octave: 3 });
 
 // The index window a clef should draw notes from for the given settings:
-// intersect the user's range with the clef's ledger scope, and (when both
-// clefs are active) apply the G3 treble/bass split.
+// the clef's own range (already clamped to its ledger scope), and (when both
+// clefs are active) the G3 treble/bass split.
 function clefWindow(
   s: Settings,
   clef: Clef,
   bothClefs: boolean
 ): { lo: number; hi: number } {
-  const scope = clefScope(clef);
-  let lo = Math.max(s.minIndex, scope.lo);
-  let hi = Math.min(s.maxIndex, scope.hi);
+  const { lo: rangeLo, hi: rangeHi } = clefRange(s, clef);
+  let lo = rangeLo;
+  let hi = rangeHi;
   if (bothClefs) {
     if (clef === 'bass') hi = Math.min(hi, SPLIT_INDEX);
     else lo = Math.max(lo, SPLIT_INDEX + 1);
@@ -204,10 +235,16 @@ const ENHARMONIC_WHITES: {
 //  - easy: naturals only
 //  - intermediate: + standard black-key sharps/flats
 //  - expert: + enharmonic white-key notes (B#, Cb, E#, Fb)
-function notesInWindow(lo: number, hi: number, s: Settings): Note[] {
+function notesInWindow(
+  lo: number,
+  hi: number,
+  difficulty: Difficulty,
+  keyboardMin: number,
+  keyboardMax: number
+): Note[] {
   const notes: Note[] = [];
   for (let i = lo; i <= hi; i++) notes.push(noteFromIndex(i)); // naturals
-  if (s.difficulty === 'easy') return notes;
+  if (difficulty === 'easy') return notes;
 
   // black-key accidentals (intermediate + expert)
   for (let i = lo; i < hi; i++) {
@@ -220,14 +257,14 @@ function notesInWindow(lo: number, hi: number, s: Settings): Note[] {
     }
   }
 
-  if (s.difficulty === 'expert') {
+  if (difficulty === 'expert') {
     for (let i = lo; i <= hi; i++) {
       const pos = noteFromIndex(i);
       const e = ENHARMONIC_WHITES.find((x) => x.letter === pos.letter);
       if (!e) continue;
       // The key it sounds as must be on the keyboard so it's answerable.
       const matchIndex = i + e.matchDelta;
-      if (matchIndex < s.minIndex || matchIndex > s.maxIndex) continue;
+      if (matchIndex < keyboardMin || matchIndex > keyboardMax) continue;
       notes.push({ letter: pos.letter, octave: pos.octave, accidental: e.accidental });
     }
   }
@@ -239,12 +276,13 @@ function notesInWindow(lo: number, hi: number, s: Settings): Note[] {
 export function nextRound(s: Settings): { clef: Clef; note: Note } {
   const clefs = enabledClefs(s);
   const bothClefs = clefs.length === 2;
+  const kb = pianoRange(s);
 
   const candidates: { clef: Clef; note: Note }[] = [];
   for (const clef of clefs) {
     const { lo, hi } = clefWindow(s, clef, bothClefs);
     if (lo > hi) continue;
-    for (const note of notesInWindow(lo, hi, s)) {
+    for (const note of notesInWindow(lo, hi, s.difficulty, kb.min, kb.max)) {
       candidates.push({ clef, note });
     }
   }
@@ -252,8 +290,8 @@ export function nextRound(s: Settings): { clef: Clef; note: Note } {
   if (candidates.length === 0) {
     // Range doesn't intersect any clef's scope — clamp to the first clef.
     const clef = clefs[0] ?? 'treble';
-    const scope = clefScope(clef);
-    const idx = Math.min(Math.max(s.minIndex, scope.lo), scope.hi);
+    const r = clefRange(s, clef);
+    const idx = r.lo <= r.hi ? r.lo : clefScope(clef).lo;
     return { clef, note: noteFromIndex(idx) };
   }
 

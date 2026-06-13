@@ -19,6 +19,7 @@ import {
   noteName,
   pitchClassName,
   nextRound,
+  pianoRange,
 } from '../music';
 import { playSemitone } from '../sound';
 
@@ -132,8 +133,8 @@ export default function PracticeScreen({ settings }: Props) {
 
       <View style={styles.pianoWrap}>
         <Piano
-          minIndex={settings.minIndex}
-          maxIndex={settings.maxIndex}
+          minIndex={pianoRange(settings).min}
+          maxIndex={pianoRange(settings).max}
           onPressKey={handlePress}
           feedback={feedback}
           disabled={locked}

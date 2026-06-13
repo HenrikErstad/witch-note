@@ -11,10 +11,10 @@ import {
   Settings,
   RotationMode,
   Difficulty,
+  Clef,
   noteFromIndex,
   noteLabel,
-  RANGE_FLOOR,
-  RANGE_CEIL,
+  clefScope,
 } from '../music';
 
 const ROTATION_OPTIONS: { value: RotationMode; label: string }[] = [
@@ -99,6 +99,55 @@ function Stepper({
   );
 }
 
+function ClefRangeCard({
+  settings,
+  clef,
+  set,
+}: {
+  settings: Settings;
+  clef: Clef;
+  set: (patch: Partial<Settings>) => void;
+}) {
+  const scope = clefScope(clef);
+  const min = clef === 'treble' ? settings.trebleMin : settings.bassMin;
+  const max = clef === 'treble' ? settings.trebleMax : settings.bassMax;
+  const setMin = (v: number) =>
+    set(clef === 'treble' ? { trebleMin: v } : { bassMin: v });
+  const setMax = (v: number) =>
+    set(clef === 'treble' ? { trebleMax: v } : { bassMax: v });
+
+  return (
+    <>
+      <Text style={styles.sectionTitle}>
+        {clef === 'treble' ? 'Treble' : 'Bass'} range
+      </Text>
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <Text style={styles.rowLabel}>Lowest note</Text>
+          <Stepper
+            value={noteLabel(noteFromIndex(min))}
+            canDec={min > scope.lo}
+            canInc={min < max}
+            onDec={() => setMin(min - 1)}
+            onInc={() => setMin(min + 1)}
+          />
+        </View>
+        <View style={styles.divider} />
+        <View style={styles.row}>
+          <Text style={styles.rowLabel}>Highest note</Text>
+          <Stepper
+            value={noteLabel(noteFromIndex(max))}
+            canDec={max > min}
+            canInc={max < scope.hi}
+            onDec={() => setMax(max - 1)}
+            onInc={() => setMax(max + 1)}
+          />
+        </View>
+      </View>
+    </>
+  );
+}
+
 export default function SettingsScreen({ settings, onChange }: Props) {
   function set(patch: Partial<Settings>) {
     onChange({ ...settings, ...patch });
@@ -133,33 +182,15 @@ export default function SettingsScreen({ settings, onChange }: Props) {
       </View>
       <Text style={styles.hint}>At least one clef must stay on.</Text>
 
-      <Text style={styles.sectionTitle}>Note range</Text>
-      <View style={styles.card}>
-        <View style={styles.row}>
-          <Text style={styles.rowLabel}>Lowest note</Text>
-          <Stepper
-            value={noteLabel(noteFromIndex(settings.minIndex))}
-            canDec={settings.minIndex > RANGE_FLOOR}
-            canInc={settings.minIndex < settings.maxIndex}
-            onDec={() => set({ minIndex: settings.minIndex - 1 })}
-            onInc={() => set({ minIndex: settings.minIndex + 1 })}
-          />
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.row}>
-          <Text style={styles.rowLabel}>Highest note</Text>
-          <Stepper
-            value={noteLabel(noteFromIndex(settings.maxIndex))}
-            canDec={settings.maxIndex > settings.minIndex}
-            canInc={settings.maxIndex < RANGE_CEIL}
-            onDec={() => set({ maxIndex: settings.maxIndex - 1 })}
-            onInc={() => set({ maxIndex: settings.maxIndex + 1 })}
-          />
-        </View>
-      </View>
+      {settings.treble && (
+        <ClefRangeCard settings={settings} clef="treble" set={set} />
+      )}
+      {settings.bass && (
+        <ClefRangeCard settings={settings} clef="bass" set={set} />
+      )}
       <Text style={styles.hint}>
-        Notes are drawn at random between these two, inclusive. A wider range adds
-        ledger-line notes.
+        Each clef draws notes at random within its own range. Ranges are capped to
+        two ledger lines beyond the staff.
       </Text>
 
       <Text style={styles.sectionTitle}>Difficulty</Text>
