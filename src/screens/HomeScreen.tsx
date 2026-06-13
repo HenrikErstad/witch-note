@@ -36,12 +36,7 @@ export default function HomeScreen({ onPractice, onBattle }: Props) {
             pressed && styles.pressed,
           ]}
         >
-          <View style={styles.battleHeader}>
-            <Text style={styles.buttonTitle}>Battle mode</Text>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>SOON</Text>
-            </View>
-          </View>
+          <Text style={styles.buttonTitle}>Battle mode</Text>
           <Text style={styles.buttonSub}>Race the clock for a high score</Text>
         </Pressable>
       </View>
@@ -91,11 +86,6 @@ const styles = StyleSheet.create({
   battle: {
     backgroundColor: '#5e5ce6',
   },
-  battleHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
   buttonTitle: {
     fontSize: 22,
     fontWeight: '700',
@@ -105,17 +95,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'rgba(255,255,255,0.85)',
     marginTop: 4,
-  },
-  badge: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  badgeText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#ffffff',
-    letterSpacing: 1,
   },
 });

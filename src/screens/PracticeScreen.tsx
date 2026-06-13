@@ -36,9 +36,16 @@ export default function PracticeScreen({ settings }: Props) {
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didMount = useRef(false);
 
   // Re-roll whenever the settings change (clefs toggled / range adjusted).
+  // Skip the first run: the initial round is already set by useState above,
+  // so re-rolling here would replace it and play the note twice.
   useEffect(() => {
+    if (!didMount.current) {
+      didMount.current = true;
+      return;
+    }
     if (timer.current) clearTimeout(timer.current);
     setFeedback(null);
     setRound(nextRound(settings));
