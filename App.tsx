@@ -114,7 +114,7 @@ export default function App() {
             />
           )}
           {screen === 'practice' && <PracticeScreen settings={settings} />}
-          {screen === 'battle' && <BattleScreen />}
+          {screen === 'battle' && <BattleScreen settings={settings} />}
           {screen === 'settings' && (
             <SettingsScreen settings={settings} onChange={updateSettings} />
           )}
