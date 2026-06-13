@@ -11,12 +11,11 @@ interface Props {
   feedback: Feedback;
   disabled: boolean;
   showLabels: boolean;
+  keyHeight?: number;
 }
 
 const WHITE_W = 48;
-const WHITE_H = 180;
 const BLACK_W = WHITE_W * 0.62;
-const BLACK_H = WHITE_H * 0.62;
 
 // White keys that have a black key (sharp) immediately to their right.
 const HAS_SHARP_AFTER: Record<Letter, boolean> = {
@@ -39,11 +38,14 @@ export default function Piano({
   feedback,
   disabled,
   showLabels,
+  keyHeight = 180,
 }: Props) {
   const whites: Note[] = [];
   for (let i = minIndex; i <= maxIndex; i++) whites.push(noteFromIndex(i));
 
   const totalWidth = whites.length * WHITE_W;
+  const whiteH = keyHeight;
+  const blackH = keyHeight * 0.62;
 
   return (
     <ScrollView
@@ -51,7 +53,7 @@ export default function Piano({
       showsHorizontalScrollIndicator
       contentContainerStyle={styles.scrollContent}
     >
-      <View style={[styles.board, { width: totalWidth }]}>
+      <View style={[styles.board, { width: totalWidth, height: whiteH }]}>
         {/* white keys */}
         {whites.map((note, idx) => {
           const fb =
@@ -64,7 +66,7 @@ export default function Piano({
               key={`w${idx}`}
               disabled={disabled}
               onPress={() => onPressKey(note)}
-              style={[styles.whiteKey, { backgroundColor: bg }]}
+              style={[styles.whiteKey, { backgroundColor: bg, height: whiteH }]}
             >
               {showLabels && (
                 <Text style={[styles.whiteLabel, { color: labelColor }]}>
@@ -86,7 +88,7 @@ export default function Piano({
             <View
               key={`b${idx}`}
               pointerEvents="none"
-              style={[styles.blackKey, { left }]}
+              style={[styles.blackKey, { left, height: blackH }]}
             />
           );
         })}
@@ -100,13 +102,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   board: {
-    height: WHITE_H,
     flexDirection: 'row',
     position: 'relative',
   },
   whiteKey: {
     width: WHITE_W,
-    height: WHITE_H,
     borderWidth: 1,
     borderColor: '#c7c7cc',
     borderBottomLeftRadius: 6,
@@ -127,7 +127,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     width: BLACK_W,
-    height: BLACK_H,
     backgroundColor: '#1c1c1e',
     borderBottomLeftRadius: 4,
     borderBottomRightRadius: 4,

@@ -12,19 +12,19 @@ interface Props {
   clef: Clef;
   note: Note;
   width: number;
+  lineGap?: number; // distance between adjacent staff lines (one staff space)
 }
 
-const LINE_GAP = 14; // distance between two adjacent staff lines = one staff space
-const HEIGHT = 220;
-const MIDDLE_LINE_Y = HEIGHT / 2;
 const INK = '#1c1c1e';
 
-// Pixel y for a note, given its diatonic step offset from the clef's middle line.
-function yForOffset(offset: number): number {
-  return MIDDLE_LINE_Y - offset * (LINE_GAP / 2);
-}
+export default function Staff({ clef, note, width, lineGap = 14 }: Props) {
+  const LINE_GAP = lineGap;
+  const HEIGHT = LINE_GAP * 15; // room for the staff plus ledger lines / clef overflow
+  const MIDDLE_LINE_Y = HEIGHT / 2;
 
-export default function Staff({ clef, note, width }: Props) {
+  // Pixel y for a note, given its diatonic step offset from the clef's middle line.
+  const yForOffset = (offset: number) => MIDDLE_LINE_Y - offset * (LINE_GAP / 2);
+
   const offset = noteIndex(note) - noteIndex(MIDDLE_LINE_NOTE[clef]);
   const noteX = Math.max(width * 0.58, 160);
   const noteY = yForOffset(offset);

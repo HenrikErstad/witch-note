@@ -9,11 +9,50 @@ import {
 } from 'react-native';
 import {
   Settings,
+  RotationMode,
   noteFromIndex,
   noteLabel,
   RANGE_FLOOR,
   RANGE_CEIL,
 } from '../music';
+
+const ROTATION_OPTIONS: { value: RotationMode; label: string }[] = [
+  { value: 'portrait', label: 'Portrait' },
+  { value: 'landscape', label: 'Landscape' },
+  { value: 'auto', label: 'Auto' },
+];
+
+function Segmented({
+  value,
+  onChange,
+}: {
+  value: RotationMode;
+  onChange: (v: RotationMode) => void;
+}) {
+  return (
+    <View style={styles.segment}>
+      {ROTATION_OPTIONS.map((opt) => {
+        const active = opt.value === value;
+        return (
+          <Pressable
+            key={opt.value}
+            onPress={() => onChange(opt.value)}
+            style={[styles.segmentBtn, active && styles.segmentBtnActive]}
+          >
+            <Text
+              style={[
+                styles.segmentText,
+                active && styles.segmentTextActive,
+              ]}
+            >
+              {opt.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
 
 interface Props {
   settings: Settings;
@@ -116,6 +155,21 @@ export default function SettingsScreen({ settings, onChange }: Props) {
         Notes are drawn at random between these two, inclusive. A wider range adds
         ledger-line notes.
       </Text>
+
+      <Text style={styles.sectionTitle}>Orientation</Text>
+      <View style={styles.card}>
+        <View style={styles.colRow}>
+          <Text style={styles.rowLabel}>Screen rotation</Text>
+          <Segmented
+            value={settings.rotation}
+            onChange={(v) => set({ rotation: v })}
+          />
+        </View>
+      </View>
+      <Text style={styles.hint}>
+        Portrait and Landscape lock the screen; Auto follows how you tilt the
+        device.
+      </Text>
     </ScrollView>
   );
 }
@@ -144,6 +198,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 14,
+  },
+  colRow: {
+    paddingVertical: 14,
+    gap: 12,
+  },
+  segment: {
+    flexDirection: 'row',
+    backgroundColor: '#e9e9ec',
+    borderRadius: 9,
+    padding: 2,
+  },
+  segmentBtn: {
+    flex: 1,
+    paddingVertical: 9,
+    borderRadius: 7,
+    alignItems: 'center',
+  },
+  segmentBtnActive: {
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
+  },
+  segmentText: {
+    fontSize: 15,
+    color: '#3a3a3c',
+    fontWeight: '500',
+  },
+  segmentTextActive: {
+    color: '#007aff',
+    fontWeight: '700',
   },
   divider: {
     height: 1,

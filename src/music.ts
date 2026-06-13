@@ -68,11 +68,14 @@ export function pickNote(minIndex: number, maxIndex: number): Note {
 
 // --- settings ---
 
+export type RotationMode = 'portrait' | 'landscape' | 'auto';
+
 export interface Settings {
   treble: boolean;
   bass: boolean;
   minIndex: number; // inclusive, diatonic index of lowest note
   maxIndex: number; // inclusive, diatonic index of highest note
+  rotation: RotationMode; // lock to portrait/landscape, or follow the device
 }
 
 // Reasonable absolute bounds for the range pickers.
@@ -84,6 +87,7 @@ export const DEFAULT_SETTINGS: Settings = {
   bass: false,
   minIndex: noteIndex({ letter: 'C', octave: 4 }), // middle C
   maxIndex: noteIndex({ letter: 'C', octave: 6 }), // C6
+  rotation: 'auto',
 };
 
 export function enabledClefs(s: Settings): Clef[] {

@@ -11,6 +11,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import * as ScreenOrientation from 'expo-screen-orientation';
 
 import { Settings } from './src/music';
 import { loadSettings, saveSettings } from './src/storage';
@@ -37,6 +38,23 @@ export default function App() {
   useEffect(() => {
     if (ready) SplashScreen.hideAsync().catch(() => {});
   }, [ready]);
+
+  // Lock to portrait / landscape, or follow the device, per the setting.
+  const rotation = settings?.rotation;
+  useEffect(() => {
+    if (rotation === undefined) return;
+    if (rotation === 'portrait') {
+      ScreenOrientation.lockAsync(
+        ScreenOrientation.OrientationLock.PORTRAIT_UP
+      ).catch(() => {});
+    } else if (rotation === 'landscape') {
+      ScreenOrientation.lockAsync(
+        ScreenOrientation.OrientationLock.LANDSCAPE
+      ).catch(() => {});
+    } else {
+      ScreenOrientation.unlockAsync().catch(() => {});
+    }
+  }, [rotation]);
 
   if (!ready || !settings) return null;
 

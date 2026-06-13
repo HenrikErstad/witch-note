@@ -3,6 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
+  ScrollView,
   useWindowDimensions,
 } from 'react-native';
 import Staff from '../components/Staff';
@@ -22,7 +23,8 @@ interface Props {
 }
 
 export default function PracticeScreen({ settings }: Props) {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
   const [round, setRound] = useState<{ clef: Clef; note: Note }>(() =>
     nextRound(settings)
   );
@@ -62,6 +64,9 @@ export default function PracticeScreen({ settings }: Props) {
   }
 
   const staffWidth = Math.max(width - 64, 220);
+  // Shrink the staff and keys when vertical space is tight (e.g. landscape).
+  const lineGap = landscape ? 9 : 14;
+  const keyHeight = Math.max(96, Math.min(180, Math.round(height * 0.32)));
 
   let banner = 'Which note is this?';
   let bannerColor = '#8e8e93';
@@ -74,12 +79,21 @@ export default function PracticeScreen({ settings }: Props) {
   }
 
   return (
-    <View style={styles.root}>
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.root}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.top}>
         <Text style={styles.clefLabel}>{CLEF_NAME[round.clef]} clef</Text>
 
         <View style={styles.card}>
-          <Staff clef={round.clef} note={round.note} width={staffWidth} />
+          <Staff
+            clef={round.clef}
+            note={round.note}
+            width={staffWidth}
+            lineGap={lineGap}
+          />
         </View>
 
         <Text style={[styles.banner, { color: bannerColor }]}>{banner}</Text>
@@ -98,16 +112,21 @@ export default function PracticeScreen({ settings }: Props) {
           feedback={feedback}
           disabled={locked}
           showLabels
+          keyHeight={keyHeight}
         />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
+  scroll: {
     flex: 1,
+  },
+  root: {
+    flexGrow: 1,
     justifyContent: 'space-between',
+    paddingVertical: 8,
   },
   top: {
     paddingHorizontal: 16,
