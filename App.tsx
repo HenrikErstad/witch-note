@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  SafeAreaView,
-  Platform,
-  StatusBar as RNStatusBar,
-} from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import {
+  SafeAreaProvider,
+  SafeAreaView,
+} from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -66,9 +62,10 @@ export default function App() {
   const onSettings = screen === 'settings';
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar style="dark" />
-      <View style={styles.header}>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
+        <StatusBar style="dark" />
+        <View style={styles.header}>
         <View style={styles.headerSide}>
           {onSettings && (
             <Pressable onPress={() => setScreen('practice')} hitSlop={12}>
@@ -88,14 +85,15 @@ export default function App() {
         </View>
       </View>
 
-      <View style={styles.body}>
-        {onSettings ? (
-          <SettingsScreen settings={settings} onChange={updateSettings} />
-        ) : (
-          <PracticeScreen settings={settings} />
-        )}
-      </View>
-    </SafeAreaView>
+        <View style={styles.body}>
+          {onSettings ? (
+            <SettingsScreen settings={settings} onChange={updateSettings} />
+          ) : (
+            <PracticeScreen settings={settings} />
+          )}
+        </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
@@ -103,7 +101,6 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: '#f2f2f7',
-    paddingTop: Platform.OS === 'android' ? RNStatusBar.currentHeight ?? 0 : 0,
   },
   header: {
     flexDirection: 'row',
