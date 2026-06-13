@@ -28,6 +28,22 @@ const BLACK_W = WHITE_W * 0.62;
 const CORRECT = '#34c759';
 const WRONG = '#ff3b30';
 
+// White keys reachable by an accidental from an adjacent white key (the B-C and
+// E-F semitone pairs) get an enharmonic name in the matching sharp/flat mode.
+function whiteEnharmonic(
+  letter: Note['letter'],
+  style: 'sharp' | 'flat'
+): string | null {
+  if (style === 'sharp') {
+    if (letter === 'C') return pitchClassName({ letter: 'B', octave: 0, accidental: 'sharp' });
+    if (letter === 'F') return pitchClassName({ letter: 'E', octave: 0, accidental: 'sharp' });
+  } else {
+    if (letter === 'E') return pitchClassName({ letter: 'F', octave: 0, accidental: 'flat' });
+    if (letter === 'B') return pitchClassName({ letter: 'C', octave: 0, accidental: 'flat' });
+  }
+  return null;
+}
+
 export default function Piano({
   minIndex,
   maxIndex,
@@ -62,6 +78,9 @@ export default function Piano({
           const bg =
             fb === 'correct' ? CORRECT : fb === 'wrong' ? WRONG : '#ffffff';
           const labelColor = fb ? '#ffffff' : '#3a3a3c';
+          const enh = blackKeysActive
+            ? whiteEnharmonic(note.letter, accidentalStyle)
+            : null;
           return (
             <Pressable
               key={`w${idx}`}
@@ -70,10 +89,22 @@ export default function Piano({
               style={[styles.whiteKey, { backgroundColor: bg, height: whiteH }]}
             >
               {showLabels && (
-                <Text style={[styles.whiteLabel, { color: labelColor }]}>
-                  {note.letter}
-                  <Text style={styles.octave}>{note.octave}</Text>
-                </Text>
+                <View style={styles.whiteLabelWrap}>
+                  <Text style={[styles.whiteLabel, { color: labelColor }]}>
+                    {note.letter}
+                    <Text style={styles.octave}>{note.octave}</Text>
+                  </Text>
+                  {enh && (
+                    <Text
+                      style={[
+                        styles.enharmonic,
+                        { color: fb ? '#ffffff' : '#8e8e93' },
+                      ]}
+                    >
+                      {enh}
+                    </Text>
+                  )}
+                </View>
               )}
             </Pressable>
           );
@@ -136,9 +167,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 10,
   },
+  whiteLabelWrap: {
+    alignItems: 'center',
+  },
   whiteLabel: {
     fontSize: 18,
     fontWeight: '600',
+  },
+  enharmonic: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 1,
   },
   octave: {
     fontSize: 11,
