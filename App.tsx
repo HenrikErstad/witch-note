@@ -11,6 +11,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 
 import { Settings } from './src/music';
 import { loadSettings, saveSettings } from './src/storage';
+import { initSound } from './src/sound';
 import PracticeScreen from './src/screens/PracticeScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 
@@ -27,6 +28,7 @@ export default function App() {
 
   useEffect(() => {
     loadSettings().then(setSettings);
+    initSound();
   }, []);
 
   const ready = (fontsLoaded || fontError) && settings !== null;

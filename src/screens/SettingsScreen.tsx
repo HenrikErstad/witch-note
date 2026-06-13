@@ -170,6 +170,20 @@ export default function SettingsScreen({ settings, onChange }: Props) {
         Adds sharp/flat notes and makes the black keys playable.
       </Text>
 
+      <Text style={styles.sectionTitle}>Sound</Text>
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <Text style={styles.rowLabel}>Play note sound</Text>
+          <Switch
+            value={settings.sound}
+            onValueChange={(v) => set({ sound: v })}
+          />
+        </View>
+      </View>
+      <Text style={styles.hint}>
+        Plays the pitch when a new note appears, and shows a "Hear note" button.
+      </Text>
+
       <Text style={styles.sectionTitle}>Orientation</Text>
       <View style={styles.card}>
         <View style={styles.colRow}>

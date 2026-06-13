@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
+  Pressable,
   StyleSheet,
   ScrollView,
   useWindowDimensions,
@@ -14,10 +15,12 @@ import {
   Clef,
   CLEF_NAME,
   samePitch,
+  semitone,
   noteName,
   pitchClassName,
   nextRound,
 } from '../music';
+import { playSemitone } from '../sound';
 
 interface Props {
   settings: Settings;
@@ -44,6 +47,11 @@ export default function PracticeScreen({ settings }: Props) {
   useEffect(() => () => {
     if (timer.current) clearTimeout(timer.current);
   }, []);
+
+  // Play the note's pitch each time a new note appears.
+  useEffect(() => {
+    if (settings.sound) playSemitone(semitone(round.note));
+  }, [round, settings.sound]);
 
   const locked = feedback?.kind === 'correct';
 
@@ -98,6 +106,16 @@ export default function PracticeScreen({ settings }: Props) {
         </View>
 
         <Text style={[styles.banner, { color: bannerColor }]}>{banner}</Text>
+
+        {settings.sound && (
+          <Pressable
+            onPress={() => playSemitone(semitone(round.note))}
+            style={styles.hearBtn}
+            hitSlop={8}
+          >
+            <Text style={styles.hearBtnText}>{'♪'} Hear note</Text>
+          </Pressable>
+        )}
 
         <View style={styles.scoreRow}>
           <Text style={styles.scoreText}>Score: {score}</Text>
@@ -161,6 +179,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 16,
     height: 24,
+  },
+  hearBtn: {
+    marginTop: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#eef2ff',
+  },
+  hearBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#007aff',
   },
   scoreRow: {
     flexDirection: 'row',
