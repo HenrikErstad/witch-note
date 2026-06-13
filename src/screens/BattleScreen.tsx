@@ -266,7 +266,7 @@ export default function BattleScreen({ settings }: Props) {
           onPressKey={handlePress}
           feedback={feedback}
           disabled={locked}
-          showLabels
+          showLabels={!settings.hardcore}
           blackKeysActive={settings.accidentals}
           keyHeight={keyHeight}
         />

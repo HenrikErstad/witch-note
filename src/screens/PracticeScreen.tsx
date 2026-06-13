@@ -130,7 +130,7 @@ export default function PracticeScreen({ settings }: Props) {
           onPressKey={handlePress}
           feedback={feedback}
           disabled={locked}
-          showLabels
+          showLabels={!settings.hardcore}
           blackKeysActive={settings.accidentals}
           keyHeight={keyHeight}
         />

@@ -125,6 +125,7 @@ export interface Settings {
   maxIndex: number; // inclusive, diatonic index of highest note
   accidentals: boolean; // include black-key notes (sharps & flats)
   sound: boolean; // play the pitch when a key is tapped
+  hardcore: boolean; // hide the note names on the piano keys
   rotation: RotationMode; // lock to portrait/landscape, or follow the device
 }
 
@@ -139,6 +140,7 @@ export const DEFAULT_SETTINGS: Settings = {
   maxIndex: noteIndex({ letter: 'C', octave: 6 }), // C6
   accidentals: false,
   sound: true,
+  hardcore: false,
   rotation: 'auto',
 };
 

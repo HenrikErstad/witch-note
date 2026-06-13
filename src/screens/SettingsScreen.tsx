@@ -170,6 +170,20 @@ export default function SettingsScreen({ settings, onChange }: Props) {
         Adds sharp/flat notes and makes the black keys playable.
       </Text>
 
+      <Text style={styles.sectionTitle}>Difficulty</Text>
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <Text style={styles.rowLabel}>Hardcore mode</Text>
+          <Switch
+            value={settings.hardcore}
+            onValueChange={(v) => set({ hardcore: v })}
+          />
+        </View>
+      </View>
+      <Text style={styles.hint}>
+        Hides the note names on the piano keys — read by position alone.
+      </Text>
+
       <Text style={styles.sectionTitle}>Sound</Text>
       <View style={styles.card}>
         <View style={styles.row}>
