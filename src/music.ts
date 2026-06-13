@@ -151,34 +151,79 @@ export function enabledClefs(s: Settings): Clef[] {
   return clefs;
 }
 
-// Build the set of candidate target notes that actually appear on the
-// on-screen keyboard for the given range: every white key, plus (when enabled)
-// every black key with a randomly chosen sharp/flat spelling.
-function candidateNotes(s: Settings): Note[] {
-  const notes: Note[] = [];
-  for (let i = s.minIndex; i <= s.maxIndex; i++) {
-    notes.push(noteFromIndex(i)); // natural (white key)
+// A clef's note scope: kept within two ledger lines above and below the staff.
+// Two ledger lines reach +/- 9 diatonic steps from the middle line (the staff
+// spans +/-4, the 1st/2nd ledger lines sit at 6/8, plus the space just beyond).
+const LEDGER_SPAN = 9;
+
+export function clefScope(clef: Clef): { lo: number; hi: number } {
+  const mid = noteIndex(MIDDLE_LINE_NOTE[clef]);
+  return { lo: mid - LEDGER_SPAN, hi: mid + LEDGER_SPAN };
+}
+
+// When both clefs are shown, notes from G3 down belong to the bass clef and
+// everything above it to the treble clef.
+const SPLIT_INDEX = noteIndex({ letter: 'G', octave: 3 });
+
+// The index window a clef should draw notes from for the given settings:
+// intersect the user's range with the clef's ledger scope, and (when both
+// clefs are active) apply the G3 treble/bass split.
+function clefWindow(
+  s: Settings,
+  clef: Clef,
+  bothClefs: boolean
+): { lo: number; hi: number } {
+  const scope = clefScope(clef);
+  let lo = Math.max(s.minIndex, scope.lo);
+  let hi = Math.min(s.maxIndex, scope.hi);
+  if (bothClefs) {
+    if (clef === 'bass') hi = Math.min(hi, SPLIT_INDEX);
+    else lo = Math.max(lo, SPLIT_INDEX + 1);
   }
-  if (s.accidentals) {
-    for (let i = s.minIndex; i < s.maxIndex; i++) {
+  return { lo, hi };
+}
+
+// Every natural in [lo, hi], plus (when enabled) each black key with a randomly
+// chosen sharp/flat spelling.
+function notesInWindow(lo: number, hi: number, accidentals: boolean): Note[] {
+  const notes: Note[] = [];
+  for (let i = lo; i <= hi; i++) notes.push(noteFromIndex(i));
+  if (accidentals) {
+    for (let i = lo; i < hi; i++) {
       const lower = noteFromIndex(i);
       if (!SHARP_AFTER[lower.letter]) continue; // no black key here
       if (randomInt(2) === 0) {
         notes.push({ ...lower, accidental: 'sharp' });
       } else {
-        const upper = noteFromIndex(i + 1);
-        notes.push({ ...upper, accidental: 'flat' });
+        notes.push({ ...noteFromIndex(i + 1), accidental: 'flat' });
       }
     }
   }
   return notes;
 }
 
-// Generate the next round: a clef from the enabled set plus a note in range.
+// Generate the next round: a (clef, note) pair respecting each clef's ledger
+// scope and the treble/bass split when both clefs are active.
 export function nextRound(s: Settings): { clef: Clef; note: Note } {
   const clefs = enabledClefs(s);
-  const clef = clefs[randomInt(clefs.length)] ?? 'treble';
-  const candidates = candidateNotes(s);
-  const note = candidates[randomInt(candidates.length)] ?? pickNote(s.minIndex, s.maxIndex);
-  return { clef, note };
+  const bothClefs = clefs.length === 2;
+
+  const candidates: { clef: Clef; note: Note }[] = [];
+  for (const clef of clefs) {
+    const { lo, hi } = clefWindow(s, clef, bothClefs);
+    if (lo > hi) continue;
+    for (const note of notesInWindow(lo, hi, s.accidentals)) {
+      candidates.push({ clef, note });
+    }
+  }
+
+  if (candidates.length === 0) {
+    // Range doesn't intersect any clef's scope — clamp to the first clef.
+    const clef = clefs[0] ?? 'treble';
+    const scope = clefScope(clef);
+    const idx = Math.min(Math.max(s.minIndex, scope.lo), scope.hi);
+    return { clef, note: noteFromIndex(idx) };
+  }
+
+  return candidates[randomInt(candidates.length)];
 }
