@@ -33,6 +33,7 @@ const en: Dict = {
   'challenge.previousBest': 'Previous best',
   'challenge.newRecord': 'New record!',
   'challenge.none': '—',
+  'challenge.history': 'Last {n} runs',
 
   'clef.trebleFull': 'Treble clef',
   'clef.bassFull': 'Bass clef',
@@ -120,6 +121,7 @@ const nb: Dict = {
   'challenge.previousBest': 'Forrige rekord',
   'challenge.newRecord': 'Ny rekord!',
   'challenge.none': '—',
+  'challenge.history': 'Siste {n} runder',
 
   'clef.trebleFull': 'G-nøkkel',
   'clef.bassFull': 'F-nøkkel',

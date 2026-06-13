@@ -56,36 +56,51 @@ export async function saveSettings(settings: Settings): Promise<void> {
   }
 }
 
-// --- challenge-mode best scores (one per difficulty) ---
+// --- challenge-mode scores ---
+// `best` is the all-time best per difficulty; `history` keeps only the last
+// HISTORY_LIMIT runs per difficulty (for the results graph).
 
-const BEST_KEY = 'note-trainer:challenge-best:v2';
+const CHALLENGE_KEY = 'note-trainer:challenge:v3';
+export const HISTORY_LIMIT = 30;
 
 export type BestScore = { correct: number; total: number };
 export type BestByDifficulty = Partial<Record<Difficulty, BestScore>>;
+export type HistoryByDifficulty = Partial<Record<Difficulty, BestScore[]>>;
+export type ChallengeData = {
+  best: BestByDifficulty;
+  history: HistoryByDifficulty;
+};
 
 const DIFFICULTIES: Difficulty[] = ['easy', 'intermediate', 'expert'];
 
-export async function loadBests(): Promise<BestByDifficulty> {
+function isScore(v: unknown): v is BestScore {
+  return (
+    typeof (v as BestScore)?.correct === 'number' &&
+    typeof (v as BestScore)?.total === 'number'
+  );
+}
+
+export async function loadChallenge(): Promise<ChallengeData> {
   try {
-    const raw = await AsyncStorage.getItem(BEST_KEY);
-    if (!raw) return {};
+    const raw = await AsyncStorage.getItem(CHALLENGE_KEY);
+    if (!raw) return { best: {}, history: {} };
     const p = JSON.parse(raw);
-    const out: BestByDifficulty = {};
+    const best: BestByDifficulty = {};
+    const history: HistoryByDifficulty = {};
     for (const d of DIFFICULTIES) {
-      const v = p?.[d];
-      if (v && typeof v.correct === 'number' && typeof v.total === 'number') {
-        out[d] = v;
-      }
+      if (isScore(p?.best?.[d])) best[d] = p.best[d];
+      const list = p?.history?.[d];
+      if (Array.isArray(list)) history[d] = list.filter(isScore).slice(-HISTORY_LIMIT);
     }
-    return out;
+    return { best, history };
   } catch {
-    return {};
+    return { best: {}, history: {} };
   }
 }
 
-export async function saveBests(map: BestByDifficulty): Promise<void> {
+export async function saveChallenge(data: ChallengeData): Promise<void> {
   try {
-    await AsyncStorage.setItem(BEST_KEY, JSON.stringify(map));
+    await AsyncStorage.setItem(CHALLENGE_KEY, JSON.stringify(data));
   } catch {
     // best-effort
   }

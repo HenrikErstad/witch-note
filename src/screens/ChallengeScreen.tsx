@@ -4,14 +4,22 @@ import {
   Text,
   Pressable,
   StyleSheet,
+  ScrollView,
   useWindowDimensions,
 } from 'react-native';
 import Staff from '../components/Staff';
 import Piano, { Feedback } from '../components/Piano';
+import ScoreGraph from '../components/ScoreGraph';
 import { Settings, Note, Clef, samePitch, semitone, nextRound, pianoRange } from '../music';
 import { playSemitone } from '../sound';
 import { useT } from '../i18n';
-import { BestScore, BestByDifficulty, loadBests, saveBests } from '../storage';
+import {
+  BestScore,
+  ChallengeData,
+  HISTORY_LIMIT,
+  loadChallenge,
+  saveChallenge,
+} from '../storage';
 
 interface Props {
   settings: Settings;
@@ -35,19 +43,21 @@ function beats(run: BestScore, best: BestScore | null): boolean {
   );
 }
 
+
 export default function ChallengeScreen({ settings }: Props) {
   const t = useT();
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
 
   const [phase, setPhase] = useState<Phase>('ready');
-  const [bests, setBests] = useState<BestByDifficulty>({});
+  const [data, setData] = useState<ChallengeData>({ best: {}, history: {} });
   const [prevBest, setPrevBest] = useState<BestScore | null>(null);
   const [result, setResult] = useState<BestScore | null>(null);
   const [isRecord, setIsRecord] = useState(false);
 
-  // Best score for the currently-selected difficulty.
-  const best = bests[settings.difficulty] ?? null;
+  // All-time best and last-30 history for the currently-selected difficulty.
+  const best = data.best[settings.difficulty] ?? null;
+  const runs = data.history[settings.difficulty] ?? [];
 
   const [round, setRound] = useState<{ clef: Clef; note: Note }>(() =>
     nextRound(settings)
@@ -62,22 +72,27 @@ export default function ChallengeScreen({ settings }: Props) {
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    loadBests().then(setBests);
+    loadChallenge().then(setData);
   }, []);
 
   const endTurn = useCallback(() => {
     const run: BestScore = { correct: correctRef.current, total: totalRef.current };
+    const diff = settings.difficulty;
+    const prev = data.best[diff] ?? null;
+    const record = beats(run, prev);
+    const nextBest = record ? run : prev;
+    const nextList = [...(data.history[diff] ?? []), run].slice(-HISTORY_LIMIT);
+    const next: ChallengeData = {
+      best: nextBest ? { ...data.best, [diff]: nextBest } : data.best,
+      history: { ...data.history, [diff]: nextList },
+    };
+    setData(next);
+    saveChallenge(next);
+    setPrevBest(prev);
     setResult(run);
-    setPrevBest(best);
-    const record = beats(run, best);
     setIsRecord(record);
-    if (record) {
-      const next: BestByDifficulty = { ...bests, [settings.difficulty]: run };
-      setBests(next);
-      saveBests(next);
-    }
     setPhase('results');
-  }, [best, bests, settings.difficulty]);
+  }, [data, settings.difficulty]);
 
   useEffect(() => {
     if (phase !== 'playing') return;
@@ -164,7 +179,7 @@ export default function ChallengeScreen({ settings }: Props) {
 
   if (phase === 'results' && result) {
     return (
-      <View style={styles.centered}>
+      <ScrollView contentContainerStyle={styles.centeredScroll}>
         {isRecord && <Text style={styles.recordBanner}>{t('challenge.newRecord')}</Text>}
         <View style={styles.resultCard}>
           <Text style={styles.resultTitle}>{t('challenge.thisRun')}</Text>
@@ -185,10 +200,21 @@ export default function ChallengeScreen({ settings }: Props) {
             ? `${prevBest.correct} · ${accuracy(prevBest)}%`
             : t('challenge.none')}
         </Text>
+
+        <View style={styles.graphBlock}>
+          <Text style={styles.graphCaption}>
+            {t('challenge.history', { n: runs.length })}
+          </Text>
+          <ScoreGraph
+            scores={runs.map((r) => r.correct)}
+            width={Math.min(width - 56, 360)}
+          />
+        </View>
+
         <Pressable onPress={() => setPhase('ready')} style={styles.primaryBtn}>
           <Text style={styles.primaryBtnText}>{t('battle.playAgain')}</Text>
         </Pressable>
-      </View>
+      </ScrollView>
     );
   }
 
@@ -246,6 +272,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 28,
+  },
+  centeredScroll: {
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+    paddingVertical: 24,
   },
   icon: {
     fontSize: 48,
@@ -312,6 +345,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#8e8e93',
     marginTop: 18,
+  },
+  graphBlock: {
+    marginTop: 22,
+    alignItems: 'center',
+  },
+  graphCaption: {
+    fontSize: 13,
+    color: '#8e8e93',
+    marginBottom: 6,
   },
   primaryBtn: {
     marginTop: 28,
