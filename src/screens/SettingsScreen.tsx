@@ -99,15 +99,18 @@ function Stepper({
   );
 }
 
-function ClefRangeCard({
+function ClefCard({
   settings,
   clef,
   set,
+  toggle,
 }: {
   settings: Settings;
   clef: Clef;
   set: (patch: Partial<Settings>) => void;
+  toggle: (clef: Clef, value: boolean) => void;
 }) {
+  const enabled = clef === 'treble' ? settings.treble : settings.bass;
   const scope = clefScope(clef);
   const min = clef === 'treble' ? settings.trebleMin : settings.bassMin;
   const max = clef === 'treble' ? settings.trebleMax : settings.bassMax;
@@ -119,30 +122,39 @@ function ClefRangeCard({
   return (
     <>
       <Text style={styles.sectionTitle}>
-        {clef === 'treble' ? 'Treble' : 'Bass'} range
+        {clef === 'treble' ? 'Treble' : 'Bass'} clef
       </Text>
       <View style={styles.card}>
         <View style={styles.row}>
-          <Text style={styles.rowLabel}>Lowest note</Text>
-          <Stepper
-            value={noteLabel(noteFromIndex(min))}
-            canDec={min > scope.lo}
-            canInc={min < max}
-            onDec={() => setMin(min - 1)}
-            onInc={() => setMin(min + 1)}
-          />
+          <Text style={styles.rowLabel}>Enabled</Text>
+          <Switch value={enabled} onValueChange={(v) => toggle(clef, v)} />
         </View>
-        <View style={styles.divider} />
-        <View style={styles.row}>
-          <Text style={styles.rowLabel}>Highest note</Text>
-          <Stepper
-            value={noteLabel(noteFromIndex(max))}
-            canDec={max > min}
-            canInc={max < scope.hi}
-            onDec={() => setMax(max - 1)}
-            onInc={() => setMax(max + 1)}
-          />
-        </View>
+        {enabled && (
+          <>
+            <View style={styles.divider} />
+            <View style={styles.row}>
+              <Text style={styles.rowLabel}>Lowest note</Text>
+              <Stepper
+                value={noteLabel(noteFromIndex(min))}
+                canDec={min > scope.lo}
+                canInc={min < max}
+                onDec={() => setMin(min - 1)}
+                onInc={() => setMin(min + 1)}
+              />
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.row}>
+              <Text style={styles.rowLabel}>Highest note</Text>
+              <Stepper
+                value={noteLabel(noteFromIndex(max))}
+                canDec={max > min}
+                canInc={max < scope.hi}
+                onDec={() => setMax(max - 1)}
+                onInc={() => setMax(max + 1)}
+              />
+            </View>
+          </>
+        )}
       </View>
     </>
   );
@@ -162,35 +174,11 @@ export default function SettingsScreen({ settings, onChange }: Props) {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <Text style={styles.sectionTitle}>Clefs</Text>
-      <View style={styles.card}>
-        <View style={styles.row}>
-          <Text style={styles.rowLabel}>Treble clef</Text>
-          <Switch
-            value={settings.treble}
-            onValueChange={(v) => toggleClef('treble', v)}
-          />
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.row}>
-          <Text style={styles.rowLabel}>Bass clef</Text>
-          <Switch
-            value={settings.bass}
-            onValueChange={(v) => toggleClef('bass', v)}
-          />
-        </View>
-      </View>
-      <Text style={styles.hint}>At least one clef must stay on.</Text>
-
-      {settings.treble && (
-        <ClefRangeCard settings={settings} clef="treble" set={set} />
-      )}
-      {settings.bass && (
-        <ClefRangeCard settings={settings} clef="bass" set={set} />
-      )}
+      <ClefCard settings={settings} clef="treble" set={set} toggle={toggleClef} />
+      <ClefCard settings={settings} clef="bass" set={set} toggle={toggleClef} />
       <Text style={styles.hint}>
-        Each clef draws notes at random within its own range. Ranges are capped to
-        two ledger lines beyond the staff.
+        Each clef draws notes within its own range (capped to two ledger lines
+        beyond the staff). At least one clef must stay on.
       </Text>
 
       <Text style={styles.sectionTitle}>Difficulty</Text>
