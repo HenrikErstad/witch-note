@@ -118,12 +118,16 @@ export function pickNote(minIndex: number, maxIndex: number): Note {
 
 export type RotationMode = 'portrait' | 'landscape' | 'auto';
 
+// easy = naturals only; intermediate = + standard black-key sharps/flats;
+// expert = + enharmonic white-key notes (B#, Cb, E#, Fb).
+export type Difficulty = 'easy' | 'intermediate' | 'expert';
+
 export interface Settings {
   treble: boolean;
   bass: boolean;
   minIndex: number; // inclusive, diatonic index of lowest note
   maxIndex: number; // inclusive, diatonic index of highest note
-  accidentals: boolean; // include black-key notes (sharps & flats)
+  difficulty: Difficulty; // which accidentals to include
   sound: boolean; // play the pitch when a key is tapped
   hardcore: boolean; // hide the note names on the piano keys
   rotation: RotationMode; // lock to portrait/landscape, or follow the device
@@ -138,7 +142,7 @@ export const DEFAULT_SETTINGS: Settings = {
   bass: false,
   minIndex: noteIndex({ letter: 'C', octave: 4 }), // middle C
   maxIndex: noteIndex({ letter: 'C', octave: 6 }), // C6
-  accidentals: false,
+  difficulty: 'easy',
   sound: true,
   hardcore: false,
   rotation: 'auto',
@@ -183,20 +187,48 @@ function clefWindow(
   return { lo, hi };
 }
 
-// Every natural in [lo, hi], plus (when enabled) each black key with a randomly
-// chosen sharp/flat spelling.
-function notesInWindow(lo: number, hi: number, accidentals: boolean): Note[] {
+// White-key letters that can be spelled as an accidental from a neighbour, with
+// the index offset to the white key the note actually sounds (expert only).
+const ENHARMONIC_WHITES: {
+  letter: Letter;
+  accidental: Accidental;
+  matchDelta: number;
+}[] = [
+  { letter: 'B', accidental: 'sharp', matchDelta: +1 }, // B# sounds as C
+  { letter: 'C', accidental: 'flat', matchDelta: -1 }, // Cb sounds as B
+  { letter: 'E', accidental: 'sharp', matchDelta: +1 }, // E# sounds as F
+  { letter: 'F', accidental: 'flat', matchDelta: -1 }, // Fb sounds as E
+];
+
+// Candidate notes for a clef window, according to the difficulty:
+//  - easy: naturals only
+//  - intermediate: + standard black-key sharps/flats
+//  - expert: + enharmonic white-key notes (B#, Cb, E#, Fb)
+function notesInWindow(lo: number, hi: number, s: Settings): Note[] {
   const notes: Note[] = [];
-  for (let i = lo; i <= hi; i++) notes.push(noteFromIndex(i));
-  if (accidentals) {
-    for (let i = lo; i < hi; i++) {
-      const lower = noteFromIndex(i);
-      if (!SHARP_AFTER[lower.letter]) continue; // no black key here
-      if (randomInt(2) === 0) {
-        notes.push({ ...lower, accidental: 'sharp' });
-      } else {
-        notes.push({ ...noteFromIndex(i + 1), accidental: 'flat' });
-      }
+  for (let i = lo; i <= hi; i++) notes.push(noteFromIndex(i)); // naturals
+  if (s.difficulty === 'easy') return notes;
+
+  // black-key accidentals (intermediate + expert)
+  for (let i = lo; i < hi; i++) {
+    const lower = noteFromIndex(i);
+    if (!SHARP_AFTER[lower.letter]) continue; // no black key here
+    if (randomInt(2) === 0) {
+      notes.push({ ...lower, accidental: 'sharp' });
+    } else {
+      notes.push({ ...noteFromIndex(i + 1), accidental: 'flat' });
+    }
+  }
+
+  if (s.difficulty === 'expert') {
+    for (let i = lo; i <= hi; i++) {
+      const pos = noteFromIndex(i);
+      const e = ENHARMONIC_WHITES.find((x) => x.letter === pos.letter);
+      if (!e) continue;
+      // The key it sounds as must be on the keyboard so it's answerable.
+      const matchIndex = i + e.matchDelta;
+      if (matchIndex < s.minIndex || matchIndex > s.maxIndex) continue;
+      notes.push({ letter: pos.letter, octave: pos.octave, accidental: e.accidental });
     }
   }
   return notes;
@@ -212,7 +244,7 @@ export function nextRound(s: Settings): { clef: Clef; note: Note } {
   for (const clef of clefs) {
     const { lo, hi } = clefWindow(s, clef, bothClefs);
     if (lo > hi) continue;
-    for (const note of notesInWindow(lo, hi, s.accidentals)) {
+    for (const note of notesInWindow(lo, hi, s)) {
       candidates.push({ clef, note });
     }
   }

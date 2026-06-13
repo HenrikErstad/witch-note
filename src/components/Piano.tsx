@@ -18,6 +18,7 @@ interface Props {
   disabled: boolean;
   showLabels: boolean;
   blackKeysActive: boolean; // are black keys part of the quiz?
+  enharmonicWhites?: boolean; // also label white keys with B#/Cb/E#/Fb
   accidentalStyle?: 'sharp' | 'flat'; // how to spell/label black keys
   keyHeight?: number;
 }
@@ -52,6 +53,7 @@ export default function Piano({
   disabled,
   showLabels,
   blackKeysActive,
+  enharmonicWhites = false,
   accidentalStyle = 'sharp',
   keyHeight = 180,
 }: Props) {
@@ -78,7 +80,7 @@ export default function Piano({
           const bg =
             fb === 'correct' ? CORRECT : fb === 'wrong' ? WRONG : '#ffffff';
           const labelColor = fb ? '#ffffff' : '#3a3a3c';
-          const enh = blackKeysActive
+          const enh = enharmonicWhites
             ? whiteEnharmonic(note.letter, accidentalStyle)
             : null;
           return (

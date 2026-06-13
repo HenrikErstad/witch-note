@@ -10,6 +10,7 @@ import {
 import {
   Settings,
   RotationMode,
+  Difficulty,
   noteFromIndex,
   noteLabel,
   RANGE_FLOOR,
@@ -22,16 +23,24 @@ const ROTATION_OPTIONS: { value: RotationMode; label: string }[] = [
   { value: 'auto', label: 'Auto' },
 ];
 
-function Segmented({
+const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
+  { value: 'easy', label: 'Easy' },
+  { value: 'intermediate', label: 'Interm.' },
+  { value: 'expert', label: 'Expert' },
+];
+
+function Segmented<T extends string>({
   value,
   onChange,
+  options,
 }: {
-  value: RotationMode;
-  onChange: (v: RotationMode) => void;
+  value: T;
+  onChange: (v: T) => void;
+  options: { value: T; label: string }[];
 }) {
   return (
     <View style={styles.segment}>
-      {ROTATION_OPTIONS.map((opt) => {
+      {options.map((opt) => {
         const active = opt.value === value;
         return (
           <Pressable
@@ -40,10 +49,7 @@ function Segmented({
             style={[styles.segmentBtn, active && styles.segmentBtnActive]}
           >
             <Text
-              style={[
-                styles.segmentText,
-                active && styles.segmentTextActive,
-              ]}
+              style={[styles.segmentText, active && styles.segmentTextActive]}
             >
               {opt.label}
             </Text>
@@ -156,22 +162,17 @@ export default function SettingsScreen({ settings, onChange }: Props) {
         ledger-line notes.
       </Text>
 
-      <Text style={styles.sectionTitle}>Notes</Text>
-      <View style={styles.card}>
-        <View style={styles.row}>
-          <Text style={styles.rowLabel}>Include black keys (sharps & flats)</Text>
-          <Switch
-            value={settings.accidentals}
-            onValueChange={(v) => set({ accidentals: v })}
-          />
-        </View>
-      </View>
-      <Text style={styles.hint}>
-        Adds sharp/flat notes and makes the black keys playable.
-      </Text>
-
       <Text style={styles.sectionTitle}>Difficulty</Text>
       <View style={styles.card}>
+        <View style={styles.colRow}>
+          <Text style={styles.rowLabel}>Notes</Text>
+          <Segmented
+            value={settings.difficulty}
+            onChange={(v) => set({ difficulty: v })}
+            options={DIFFICULTY_OPTIONS}
+          />
+        </View>
+        <View style={styles.divider} />
         <View style={styles.row}>
           <Text style={styles.rowLabel}>Hardcore mode</Text>
           <Switch
@@ -181,7 +182,8 @@ export default function SettingsScreen({ settings, onChange }: Props) {
         </View>
       </View>
       <Text style={styles.hint}>
-        Hides the note names on the piano keys — read by position alone.
+        Easy: naturals only. Intermediate: adds sharps & flats. Expert: also adds
+        B♯, C♭, E♯, F♭. Hardcore hides the note names on the keys.
       </Text>
 
       <Text style={styles.sectionTitle}>Sound</Text>
@@ -205,6 +207,7 @@ export default function SettingsScreen({ settings, onChange }: Props) {
           <Segmented
             value={settings.rotation}
             onChange={(v) => set({ rotation: v })}
+            options={ROTATION_OPTIONS}
           />
         </View>
       </View>

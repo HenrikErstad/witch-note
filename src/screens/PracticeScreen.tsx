@@ -131,7 +131,8 @@ export default function PracticeScreen({ settings }: Props) {
           feedback={feedback}
           disabled={locked}
           showLabels={!settings.hardcore}
-          blackKeysActive={settings.accidentals}
+          blackKeysActive={settings.difficulty !== 'easy'}
+          enharmonicWhites={settings.difficulty === 'expert'}
           accidentalStyle={round.note.accidental === 'flat' ? 'flat' : 'sharp'}
           keyHeight={keyHeight}
         />
