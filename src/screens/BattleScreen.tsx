@@ -268,6 +268,7 @@ export default function BattleScreen({ settings }: Props) {
           disabled={locked}
           showLabels={!settings.hardcore}
           blackKeysActive={settings.accidentals}
+          accidentalStyle={round.note.accidental === 'flat' ? 'flat' : 'sharp'}
           keyHeight={keyHeight}
         />
       </View>

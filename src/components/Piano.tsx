@@ -18,6 +18,7 @@ interface Props {
   disabled: boolean;
   showLabels: boolean;
   blackKeysActive: boolean; // are black keys part of the quiz?
+  accidentalStyle?: 'sharp' | 'flat'; // how to spell/label black keys
   keyHeight?: number;
 }
 
@@ -35,6 +36,7 @@ export default function Piano({
   disabled,
   showLabels,
   blackKeysActive,
+  accidentalStyle = 'sharp',
   keyHeight = 180,
 }: Props) {
   const whites: Note[] = [];
@@ -82,7 +84,12 @@ export default function Piano({
           if (idx === whites.length - 1 || !SHARP_AFTER[note.letter]) {
             return null;
           }
-          const blackNote: Note = { ...note, accidental: 'sharp' };
+          // Spell the black key as a sharp of the lower white or a flat of the
+          // upper white, matching the accidental currently in play.
+          const blackNote: Note =
+            accidentalStyle === 'flat'
+              ? { ...whites[idx + 1], accidental: 'flat' }
+              : { ...note, accidental: 'sharp' };
           const fb = fbKind(blackNote);
           const bg =
             fb === 'correct' ? CORRECT : fb === 'wrong' ? WRONG : '#1c1c1e';
