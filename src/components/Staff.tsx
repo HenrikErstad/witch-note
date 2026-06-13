@@ -48,6 +48,16 @@ export default function Staff({ clef, note, width, lineGap = 14 }: Props) {
   const noteRy = LINE_GAP * 0.52;
   const ledgerHalf = noteRx + 6;
 
+  // Accidental glyph (sharp/flat) sits just left of the notehead, vertically
+  // centred on it (SMuFL accidentals are registered on the baseline centre).
+  const accidental = note.accidental ?? 'natural';
+  const accGlyph =
+    accidental === 'sharp'
+      ? GLYPH.sharp
+      : accidental === 'flat'
+        ? GLYPH.flat
+        : null;
+
   return (
     <Svg width={width} height={HEIGHT}>
       {/* staff lines */}
@@ -86,6 +96,20 @@ export default function Staff({ clef, note, width, lineGap = 14 }: Props) {
           strokeWidth={1.6}
         />
       ))}
+
+      {/* accidental (sharp / flat) */}
+      {accGlyph && (
+        <SvgText
+          x={noteX - noteRx - LINE_GAP * 0.5}
+          y={noteY}
+          fill={INK}
+          fontSize={4 * LINE_GAP}
+          fontFamily="Bravura"
+          textAnchor="end"
+        >
+          {accGlyph}
+        </SvgText>
+      )}
 
       {/* notehead (slightly tilted oval) */}
       <G transform={`rotate(-18 ${noteX} ${noteY})`}>

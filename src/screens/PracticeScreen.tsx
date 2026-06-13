@@ -13,8 +13,9 @@ import {
   Note,
   Clef,
   CLEF_NAME,
-  noteEquals,
-  noteLabel,
+  samePitch,
+  noteName,
+  pitchClassName,
   nextRound,
 } from '../music';
 
@@ -48,7 +49,7 @@ export default function PracticeScreen({ settings }: Props) {
 
   function handlePress(note: Note) {
     if (locked) return;
-    if (noteEquals(note, round.note)) {
+    if (samePitch(note, round.note)) {
       setFeedback({ note, kind: 'correct' });
       setScore((s) => s + 1);
       setStreak((s) => s + 1);
@@ -71,10 +72,10 @@ export default function PracticeScreen({ settings }: Props) {
   let banner = 'Which note is this?';
   let bannerColor = '#8e8e93';
   if (feedback?.kind === 'correct') {
-    banner = `Correct — ${noteLabel(round.note)}`;
+    banner = `Correct — ${noteName(round.note)}`;
     bannerColor = '#34c759';
   } else if (feedback?.kind === 'wrong') {
-    banner = `That's ${feedback.note.letter} — try again`;
+    banner = `That's ${pitchClassName(feedback.note)} — try again`;
     bannerColor = '#ff3b30';
   }
 
@@ -112,6 +113,7 @@ export default function PracticeScreen({ settings }: Props) {
           feedback={feedback}
           disabled={locked}
           showLabels
+          blackKeysActive={settings.accidentals}
           keyHeight={keyHeight}
         />
       </View>

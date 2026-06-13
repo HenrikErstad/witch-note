@@ -1,6 +1,12 @@
 import React from 'react';
 import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
-import { Letter, Note, noteFromIndex, noteEquals } from '../music';
+import {
+  Note,
+  noteFromIndex,
+  samePitch,
+  pitchClassName,
+  SHARP_AFTER,
+} from '../music';
 
 export type Feedback = { note: Note; kind: 'correct' | 'wrong' } | null;
 
@@ -11,22 +17,12 @@ interface Props {
   feedback: Feedback;
   disabled: boolean;
   showLabels: boolean;
+  blackKeysActive: boolean; // are black keys part of the quiz?
   keyHeight?: number;
 }
 
 const WHITE_W = 48;
 const BLACK_W = WHITE_W * 0.62;
-
-// White keys that have a black key (sharp) immediately to their right.
-const HAS_SHARP_AFTER: Record<Letter, boolean> = {
-  C: true,
-  D: true,
-  E: false,
-  F: true,
-  G: true,
-  A: true,
-  B: false,
-};
 
 const CORRECT = '#34c759';
 const WRONG = '#ff3b30';
@@ -38,6 +34,7 @@ export default function Piano({
   feedback,
   disabled,
   showLabels,
+  blackKeysActive,
   keyHeight = 180,
 }: Props) {
   const whites: Note[] = [];
@@ -46,6 +43,9 @@ export default function Piano({
   const totalWidth = whites.length * WHITE_W;
   const whiteH = keyHeight;
   const blackH = keyHeight * 0.62;
+
+  const fbKind = (key: Note) =>
+    feedback && samePitch(feedback.note, key) ? feedback.kind : null;
 
   return (
     <ScrollView
@@ -56,8 +56,7 @@ export default function Piano({
       <View style={[styles.board, { width: totalWidth, height: whiteH }]}>
         {/* white keys */}
         {whites.map((note, idx) => {
-          const fb =
-            feedback && noteEquals(feedback.note, note) ? feedback.kind : null;
+          const fb = fbKind(note);
           const bg =
             fb === 'correct' ? CORRECT : fb === 'wrong' ? WRONG : '#ffffff';
           const labelColor = fb ? '#ffffff' : '#3a3a3c';
@@ -78,18 +77,33 @@ export default function Piano({
           );
         })}
 
-        {/* black keys (decorative — quiz uses natural notes only) */}
+        {/* black keys (sharps) — tappable when accidentals are enabled */}
         {whites.map((note, idx) => {
-          if (idx === whites.length - 1 || !HAS_SHARP_AFTER[note.letter]) {
+          if (idx === whites.length - 1 || !SHARP_AFTER[note.letter]) {
             return null;
           }
+          const blackNote: Note = { ...note, accidental: 'sharp' };
+          const fb = fbKind(blackNote);
+          const bg =
+            fb === 'correct' ? CORRECT : fb === 'wrong' ? WRONG : '#1c1c1e';
           const left = (idx + 1) * WHITE_W - BLACK_W / 2;
           return (
-            <View
+            <Pressable
               key={`b${idx}`}
-              pointerEvents="none"
-              style={[styles.blackKey, { left, height: blackH }]}
-            />
+              disabled={disabled || !blackKeysActive}
+              onPress={() => onPressKey(blackNote)}
+              style={[
+                styles.blackKey,
+                { left, height: blackH, backgroundColor: bg },
+              ]}
+            >
+              {showLabels && blackKeysActive && (
+                <Text style={styles.blackLabel}>
+                  {pitchClassName(blackNote)}
+                  <Text style={styles.blackOctave}>{blackNote.octave}</Text>
+                </Text>
+              )}
+            </Pressable>
           );
         })}
       </View>
@@ -131,5 +145,18 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
     borderBottomRightRadius: 4,
     zIndex: 2,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingBottom: 8,
+  },
+  blackLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  blackOctave: {
+    fontSize: 9,
+    fontWeight: '400',
+    color: '#ffffff',
   },
 });

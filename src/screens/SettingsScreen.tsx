@@ -156,6 +156,20 @@ export default function SettingsScreen({ settings, onChange }: Props) {
         ledger-line notes.
       </Text>
 
+      <Text style={styles.sectionTitle}>Notes</Text>
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <Text style={styles.rowLabel}>Include black keys (sharps & flats)</Text>
+          <Switch
+            value={settings.accidentals}
+            onValueChange={(v) => set({ accidentals: v })}
+          />
+        </View>
+      </View>
+      <Text style={styles.hint}>
+        Adds sharp/flat notes and makes the black keys playable.
+      </Text>
+
       <Text style={styles.sectionTitle}>Orientation</Text>
       <View style={styles.card}>
         <View style={styles.colRow}>

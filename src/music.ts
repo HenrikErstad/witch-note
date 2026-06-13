@@ -1,17 +1,53 @@
 // Core music-theory model for the note trainer.
-// We work with natural (white-key) notes only: C D E F G A B.
+// Notes carry a letter, an octave, and an optional accidental (sharp/flat).
+// The letter+octave fix the position on the staff; the accidental adds a glyph
+// and shifts the sounding pitch (and which piano key it maps to).
 
 export type Letter = 'C' | 'D' | 'E' | 'F' | 'G' | 'A' | 'B';
 export type Clef = 'treble' | 'bass';
+export type Accidental = 'natural' | 'sharp' | 'flat';
 
 export const LETTERS: Letter[] = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 
 // Scale degree of each natural note within an octave (C = 0 ... B = 6).
 const DEGREE: Record<Letter, number> = { C: 0, D: 1, E: 2, F: 3, G: 4, A: 5, B: 6 };
 
+// Semitone offset of each natural within an octave (C = 0 ... B = 11).
+const SEMITONE: Record<Letter, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+
+// White keys that have a black key (sharp) immediately above them.
+export const SHARP_AFTER: Record<Letter, boolean> = {
+  C: true,
+  D: true,
+  E: false,
+  F: true,
+  G: true,
+  A: true,
+  B: false,
+};
+
+const ACC_SYMBOL: Record<Accidental, string> = {
+  natural: '',
+  sharp: String.fromCharCode(0x266f), // music sharp sign
+  flat: String.fromCharCode(0x266d), // music flat sign
+};
+
 export interface Note {
   letter: Letter;
   octave: number; // scientific pitch notation, e.g. middle C = C4
+  accidental?: Accidental; // defaults to natural
+}
+
+// Chromatic pitch (MIDI-like): identifies which physical piano key a note is.
+// Enharmonics collapse here, e.g. C#4 and Db4 give the same value.
+export function semitone(n: Note): number {
+  const acc = n.accidental === 'sharp' ? 1 : n.accidental === 'flat' ? -1 : 0;
+  return 12 * n.octave + SEMITONE[n.letter] + acc;
+}
+
+// Same physical key / sounding pitch (enharmonic-aware).
+export function samePitch(a: Note, b: Note): boolean {
+  return semitone(a) === semitone(b);
 }
 
 // A "diatonic index": counts natural notes from C0 upward, so every white key
@@ -38,6 +74,16 @@ export function noteLabel(n: Note): string {
   return `${n.letter}${n.octave}`;
 }
 
+// Display name including any accidental, e.g. "C#4" / "Db5".
+export function noteName(n: Note): string {
+  return `${n.letter}${ACC_SYMBOL[n.accidental ?? 'natural']}${n.octave}`;
+}
+
+// Short display name without the octave, e.g. "C#".
+export function pitchClassName(n: Note): string {
+  return `${n.letter}${ACC_SYMBOL[n.accidental ?? 'natural']}`;
+}
+
 // The note that sits on the *middle line* of each clef's staff.
 export const MIDDLE_LINE_NOTE: Record<Clef, Note> = {
   treble: { letter: 'B', octave: 4 }, // treble middle line = B4
@@ -53,6 +99,8 @@ export const CLEF_NAME: Record<Clef, string> = {
 export const GLYPH = {
   trebleClef: String.fromCharCode(0xe050), // gClef
   bassClef: String.fromCharCode(0xe062), // fClef
+  sharp: String.fromCharCode(0xe262), // accidentalSharp
+  flat: String.fromCharCode(0xe260), // accidentalFlat
 };
 
 // --- random selection ---
@@ -75,6 +123,7 @@ export interface Settings {
   bass: boolean;
   minIndex: number; // inclusive, diatonic index of lowest note
   maxIndex: number; // inclusive, diatonic index of highest note
+  accidentals: boolean; // include black-key notes (sharps & flats)
   rotation: RotationMode; // lock to portrait/landscape, or follow the device
 }
 
@@ -87,6 +136,7 @@ export const DEFAULT_SETTINGS: Settings = {
   bass: false,
   minIndex: noteIndex({ letter: 'C', octave: 4 }), // middle C
   maxIndex: noteIndex({ letter: 'C', octave: 6 }), // C6
+  accidentals: false,
   rotation: 'auto',
 };
 
@@ -97,10 +147,34 @@ export function enabledClefs(s: Settings): Clef[] {
   return clefs;
 }
 
+// Build the set of candidate target notes that actually appear on the
+// on-screen keyboard for the given range: every white key, plus (when enabled)
+// every black key with a randomly chosen sharp/flat spelling.
+function candidateNotes(s: Settings): Note[] {
+  const notes: Note[] = [];
+  for (let i = s.minIndex; i <= s.maxIndex; i++) {
+    notes.push(noteFromIndex(i)); // natural (white key)
+  }
+  if (s.accidentals) {
+    for (let i = s.minIndex; i < s.maxIndex; i++) {
+      const lower = noteFromIndex(i);
+      if (!SHARP_AFTER[lower.letter]) continue; // no black key here
+      if (randomInt(2) === 0) {
+        notes.push({ ...lower, accidental: 'sharp' });
+      } else {
+        const upper = noteFromIndex(i + 1);
+        notes.push({ ...upper, accidental: 'flat' });
+      }
+    }
+  }
+  return notes;
+}
+
 // Generate the next round: a clef from the enabled set plus a note in range.
 export function nextRound(s: Settings): { clef: Clef; note: Note } {
   const clefs = enabledClefs(s);
   const clef = clefs[randomInt(clefs.length)] ?? 'treble';
-  const note = pickNote(s.minIndex, s.maxIndex);
+  const candidates = candidateNotes(s);
+  const note = candidates[randomInt(candidates.length)] ?? pickNote(s.minIndex, s.maxIndex);
   return { clef, note };
 }
