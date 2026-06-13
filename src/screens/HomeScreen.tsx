@@ -14,7 +14,6 @@ export default function HomeScreen({ onPractice, onBattle }: Props) {
       <View style={styles.hero}>
         <Text style={styles.logo}>{'♫'}</Text>
         <Text style={styles.title}>{t('app.name')}</Text>
-        <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
       </View>
 
       <View style={styles.buttons}>
@@ -65,11 +64,6 @@ const styles = StyleSheet.create({
     fontSize: 34,
     fontWeight: '800',
     color: '#1c1c1e',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#8e8e93',
-    marginTop: 6,
   },
   buttons: {
     gap: 16,
