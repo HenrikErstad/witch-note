@@ -13,6 +13,7 @@ import { Settings } from './src/music';
 import { loadSettings, saveSettings } from './src/storage';
 import { initSound } from './src/sound';
 import { LangProvider, resolveLang, translate } from './src/i18n';
+import GearIcon from './src/components/GearIcon';
 import HomeScreen from './src/screens/HomeScreen';
 import PracticeScreen from './src/screens/PracticeScreen';
 import BattleScreen from './src/screens/BattleScreen';
@@ -105,8 +106,13 @@ export default function App() {
             <Text style={styles.title}>{t(TITLE_KEY[screen])}</Text>
             <View style={[styles.headerSide, styles.headerRight]}>
               {showSettingsButton && (
-                <Pressable onPress={openSettings} hitSlop={12}>
-                  <Text style={styles.headerAction}>{t('header.settings')}</Text>
+                <Pressable
+                  onPress={openSettings}
+                  hitSlop={12}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('header.settings')}
+                >
+                  <GearIcon size={24} color="#007aff" />
                 </Pressable>
               )}
             </View>
