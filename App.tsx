@@ -12,19 +12,30 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { Settings } from './src/music';
 import { loadSettings, saveSettings } from './src/storage';
 import { initSound } from './src/sound';
+import HomeScreen from './src/screens/HomeScreen';
 import PracticeScreen from './src/screens/PracticeScreen';
+import BattleScreen from './src/screens/BattleScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-type Screen = 'practice' | 'settings';
+type Screen = 'home' | 'practice' | 'battle' | 'settings';
+
+const TITLES: Record<Screen, string> = {
+  home: 'Note Trainer',
+  practice: 'Practice mode',
+  battle: 'Battle mode',
+  settings: 'Settings',
+};
 
 export default function App() {
   const [fontsLoaded, fontError] = useFonts({
     Bravura: require('./assets/Bravura.otf'),
   });
   const [settings, setSettings] = useState<Settings | null>(null);
-  const [screen, setScreen] = useState<Screen>('practice');
+  const [screen, setScreen] = useState<Screen>('home');
+  // Where to return to when leaving Settings.
+  const [settingsFrom, setSettingsFrom] = useState<Screen>('home');
 
   useEffect(() => {
     loadSettings().then(setSettings);
@@ -61,37 +72,51 @@ export default function App() {
     saveSettings(next);
   }
 
-  const onSettings = screen === 'settings';
+  function openSettings() {
+    setSettingsFrom(screen);
+    setScreen('settings');
+  }
+
+  // Back goes to where Settings was opened from; otherwise home.
+  const backTarget: Screen | null =
+    screen === 'settings' ? settingsFrom : screen === 'home' ? null : 'home';
+
+  // Settings gear shows on home and practice.
+  const showSettingsButton = screen === 'home' || screen === 'practice';
 
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
         <StatusBar style="dark" />
         <View style={styles.header}>
-        <View style={styles.headerSide}>
-          {onSettings && (
-            <Pressable onPress={() => setScreen('practice')} hitSlop={12}>
-              <Text style={styles.headerAction}>{'‹'} Back</Text>
-            </Pressable>
-          )}
+          <View style={styles.headerSide}>
+            {backTarget && (
+              <Pressable onPress={() => setScreen(backTarget)} hitSlop={12}>
+                <Text style={styles.headerAction}>{'‹'} Back</Text>
+              </Pressable>
+            )}
+          </View>
+          <Text style={styles.title}>{TITLES[screen]}</Text>
+          <View style={[styles.headerSide, styles.headerRight]}>
+            {showSettingsButton && (
+              <Pressable onPress={openSettings} hitSlop={12}>
+                <Text style={styles.headerAction}>Settings</Text>
+              </Pressable>
+            )}
+          </View>
         </View>
-        <Text style={styles.title}>
-          {onSettings ? 'Settings' : 'Note Trainer'}
-        </Text>
-        <View style={[styles.headerSide, styles.headerRight]}>
-          {!onSettings && (
-            <Pressable onPress={() => setScreen('settings')} hitSlop={12}>
-              <Text style={styles.headerAction}>Settings</Text>
-            </Pressable>
-          )}
-        </View>
-      </View>
 
         <View style={styles.body}>
-          {onSettings ? (
+          {screen === 'home' && (
+            <HomeScreen
+              onPractice={() => setScreen('practice')}
+              onBattle={() => setScreen('battle')}
+            />
+          )}
+          {screen === 'practice' && <PracticeScreen settings={settings} />}
+          {screen === 'battle' && <BattleScreen />}
+          {screen === 'settings' && (
             <SettingsScreen settings={settings} onChange={updateSettings} />
-          ) : (
-            <PracticeScreen settings={settings} />
           )}
         </View>
       </SafeAreaView>
