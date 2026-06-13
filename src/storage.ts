@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Settings, DEFAULT_SETTINGS, clefScope } from './music';
+import { Settings, DEFAULT_SETTINGS, clefScope, Difficulty } from './music';
 import { resolveLang } from './i18n';
 
 const KEY = 'note-trainer:settings:v2';
@@ -53,5 +53,40 @@ export async function saveSettings(settings: Settings): Promise<void> {
     await AsyncStorage.setItem(KEY, JSON.stringify(settings));
   } catch {
     // best-effort; ignore write failures
+  }
+}
+
+// --- challenge-mode best scores (one per difficulty) ---
+
+const BEST_KEY = 'note-trainer:challenge-best:v2';
+
+export type BestScore = { correct: number; total: number };
+export type BestByDifficulty = Partial<Record<Difficulty, BestScore>>;
+
+const DIFFICULTIES: Difficulty[] = ['easy', 'intermediate', 'expert'];
+
+export async function loadBests(): Promise<BestByDifficulty> {
+  try {
+    const raw = await AsyncStorage.getItem(BEST_KEY);
+    if (!raw) return {};
+    const p = JSON.parse(raw);
+    const out: BestByDifficulty = {};
+    for (const d of DIFFICULTIES) {
+      const v = p?.[d];
+      if (v && typeof v.correct === 'number' && typeof v.total === 'number') {
+        out[d] = v;
+      }
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+export async function saveBests(map: BestByDifficulty): Promise<void> {
+  try {
+    await AsyncStorage.setItem(BEST_KEY, JSON.stringify(map));
+  } catch {
+    // best-effort
   }
 }

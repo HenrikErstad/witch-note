@@ -4,10 +4,11 @@ import { useT } from '../i18n';
 
 interface Props {
   onPractice: () => void;
+  onChallenge: () => void;
   onBattle: () => void;
 }
 
-export default function HomeScreen({ onPractice, onBattle }: Props) {
+export default function HomeScreen({ onPractice, onChallenge, onBattle }: Props) {
   const t = useT();
   return (
     <View style={styles.root}>
@@ -27,6 +28,18 @@ export default function HomeScreen({ onPractice, onBattle }: Props) {
         >
           <Text style={styles.buttonTitle}>{t('home.practice')}</Text>
           <Text style={styles.buttonSub}>{t('home.practiceSub')}</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={onChallenge}
+          style={({ pressed }) => [
+            styles.button,
+            styles.challenge,
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={styles.buttonTitle}>{t('home.challenge')}</Text>
+          <Text style={styles.buttonSub}>{t('home.challengeSub')}</Text>
         </Pressable>
 
         <Pressable
@@ -78,6 +91,9 @@ const styles = StyleSheet.create({
   },
   practice: {
     backgroundColor: '#007aff',
+  },
+  challenge: {
+    backgroundColor: '#ff9500',
   },
   battle: {
     backgroundColor: '#5e5ce6',

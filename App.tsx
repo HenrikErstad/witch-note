@@ -16,16 +16,18 @@ import { LangProvider, resolveLang, translate } from './src/i18n';
 import GearIcon from './src/components/GearIcon';
 import HomeScreen from './src/screens/HomeScreen';
 import PracticeScreen from './src/screens/PracticeScreen';
+import ChallengeScreen from './src/screens/ChallengeScreen';
 import BattleScreen from './src/screens/BattleScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-type Screen = 'home' | 'practice' | 'battle' | 'settings';
+type Screen = 'home' | 'practice' | 'challenge' | 'battle' | 'settings';
 
 const TITLE_KEY: Record<Screen, string> = {
   home: 'app.name',
   practice: 'title.practice',
+  challenge: 'title.challenge',
   battle: 'title.battle',
   settings: 'title.settings',
 };
@@ -122,10 +124,12 @@ export default function App() {
           {screen === 'home' && (
             <HomeScreen
               onPractice={() => setScreen('practice')}
+              onChallenge={() => setScreen('challenge')}
               onBattle={() => setScreen('battle')}
             />
           )}
           {screen === 'practice' && <PracticeScreen settings={settings} />}
+          {screen === 'challenge' && <ChallengeScreen settings={settings} />}
           {screen === 'battle' && <BattleScreen settings={settings} />}
           {screen === 'settings' && (
             <SettingsScreen settings={settings} onChange={updateSettings} />
