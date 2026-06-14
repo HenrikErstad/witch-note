@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Settings, DEFAULT_SETTINGS, clefScope, Difficulty } from './music';
 import { resolveLang } from './i18n';
 
-const KEY = 'note-trainer:settings:v2';
+const KEY = 'witch-note:settings:v2';
 
 export async function loadSettings(): Promise<Settings> {
   try {
@@ -60,7 +60,7 @@ export async function saveSettings(settings: Settings): Promise<void> {
 // `best` is the all-time best per difficulty; `history` keeps only the last
 // HISTORY_LIMIT runs per difficulty (for the results graph).
 
-const CHALLENGE_KEY = 'note-trainer:challenge:v3';
+const CHALLENGE_KEY = 'witch-note:challenge:v3';
 export const HISTORY_LIMIT = 30;
 
 export type BestScore = { correct: number; total: number };

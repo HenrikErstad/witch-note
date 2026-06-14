@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Witch Note",
-    "slug": "note-trainer",
+    "slug": "witch-note",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
