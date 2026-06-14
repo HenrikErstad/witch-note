@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Image, View, Text, Pressable, StyleSheet } from 'react-native';
 import { useT } from '../i18n';
 import { PHONE_CONTENT_WIDTH } from '../layout';
 
@@ -14,7 +14,11 @@ export default function HomeScreen({ onPractice, onChallenge, onBattle }: Props)
   return (
     <View style={styles.root}>
       <View style={styles.hero}>
-        <Text style={styles.logo}>{'♫'}</Text>
+        <Image
+          source={require('../../assets/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.title}>{t('app.name')}</Text>
       </View>
 
@@ -71,9 +75,9 @@ const styles = StyleSheet.create({
     marginBottom: 48,
   },
   logo: {
-    fontSize: 56,
-    color: '#007aff',
-    marginBottom: 8,
+    width: 132,
+    height: 132,
+    marginBottom: 12,
   },
   title: {
     fontSize: 34,
