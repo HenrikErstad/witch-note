@@ -15,7 +15,7 @@ export default function HomeScreen({ onPractice, onChallenge, onBattle }: Props)
     <View style={styles.root}>
       <View style={styles.hero}>
         <Image
-          source={require('../../assets/logo.png')}
+          source={require('../../assets/logo-monochrome-inverted.png')}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -31,8 +31,12 @@ export default function HomeScreen({ onPractice, onChallenge, onBattle }: Props)
             pressed && styles.pressed,
           ]}
         >
-          <Text style={styles.buttonTitle}>{t('home.practice')}</Text>
-          <Text style={styles.buttonSub}>{t('home.practiceSub')}</Text>
+          <Text style={[styles.buttonTitle, styles.practiceTitle]}>
+            {t('home.practice')}
+          </Text>
+          <Text style={[styles.buttonSub, styles.practiceSub]}>
+            {t('home.practiceSub')}
+          </Text>
         </Pressable>
 
         <Pressable
@@ -43,8 +47,12 @@ export default function HomeScreen({ onPractice, onChallenge, onBattle }: Props)
             pressed && styles.pressed,
           ]}
         >
-          <Text style={styles.buttonTitle}>{t('home.challenge')}</Text>
-          <Text style={styles.buttonSub}>{t('home.challengeSub')}</Text>
+          <Text style={[styles.buttonTitle, styles.challengeTitle]}>
+            {t('home.challenge')}
+          </Text>
+          <Text style={[styles.buttonSub, styles.challengeSub]}>
+            {t('home.challengeSub')}
+          </Text>
         </Pressable>
 
         <Pressable
@@ -55,8 +63,12 @@ export default function HomeScreen({ onPractice, onChallenge, onBattle }: Props)
             pressed && styles.pressed,
           ]}
         >
-          <Text style={styles.buttonTitle}>{t('home.battle')}</Text>
-          <Text style={styles.buttonSub}>{t('home.battleSub')}</Text>
+          <Text style={[styles.buttonTitle, styles.battleTitle]}>
+            {t('home.battle')}
+          </Text>
+          <Text style={[styles.buttonSub, styles.battleSub]}>
+            {t('home.battleSub')}
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -75,8 +87,8 @@ const styles = StyleSheet.create({
     marginBottom: 48,
   },
   logo: {
-    width: 132,
-    height: 132,
+    width: 158,
+    height: 158,
     marginBottom: 12,
   },
   title: {
@@ -98,13 +110,31 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
   practice: {
-    backgroundColor: '#007aff',
+    backgroundColor: '#bdebc9',
+  },
+  practiceTitle: {
+    color: '#14532d',
+  },
+  practiceSub: {
+    color: '#2f6b48',
   },
   challenge: {
-    backgroundColor: '#ff9500',
+    backgroundColor: '#ffd8b0',
+  },
+  challengeTitle: {
+    color: '#7a3e0a',
+  },
+  challengeSub: {
+    color: '#9a5a22',
   },
   battle: {
-    backgroundColor: '#5e5ce6',
+    backgroundColor: '#f3e3a3',
+  },
+  battleTitle: {
+    color: '#5c4708',
+  },
+  battleSub: {
+    color: '#7a6418',
   },
   buttonTitle: {
     fontSize: 22,
