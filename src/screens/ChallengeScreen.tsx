@@ -10,6 +10,7 @@ import {
 import Staff from '../components/Staff';
 import Piano, { Feedback } from '../components/Piano';
 import ScoreGraph from '../components/ScoreGraph';
+import Confetti from '../components/Confetti';
 import { Settings, Note, Clef, samePitch, semitone, nextRound, pianoRange } from '../music';
 import { playSemitone } from '../sound';
 import { useT } from '../i18n';
@@ -178,9 +179,14 @@ export default function ChallengeScreen({ settings }: Props) {
   }
 
   if (phase === 'results' && result) {
+    // Confetti only when beating a previous best — not the very first record.
+    const beatHighscore = isRecord && prevBest != null;
     return (
-      <ScrollView contentContainerStyle={styles.centeredScroll}>
-        {isRecord && <Text style={styles.recordBanner}>{t('challenge.newRecord')}</Text>}
+      <View style={styles.resultsRoot}>
+        <ScrollView contentContainerStyle={styles.centeredScroll}>
+          {isRecord && (
+            <Text style={styles.recordBanner}>{t('challenge.newRecord')}</Text>
+          )}
         <View style={styles.resultCard}>
           <Text style={styles.resultTitle}>{t('challenge.thisRun')}</Text>
           <View style={styles.resultStats}>
@@ -211,10 +217,12 @@ export default function ChallengeScreen({ settings }: Props) {
           />
         </View>
 
-        <Pressable onPress={() => setPhase('ready')} style={styles.primaryBtn}>
-          <Text style={styles.primaryBtnText}>{t('battle.playAgain')}</Text>
-        </Pressable>
-      </ScrollView>
+          <Pressable onPress={() => setPhase('ready')} style={styles.primaryBtn}>
+            <Text style={styles.primaryBtnText}>{t('battle.playAgain')}</Text>
+          </Pressable>
+        </ScrollView>
+        {beatHighscore && <Confetti />}
+      </View>
     );
   }
 
@@ -272,6 +280,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 28,
+  },
+  resultsRoot: {
+    flex: 1,
   },
   centeredScroll: {
     flexGrow: 1,

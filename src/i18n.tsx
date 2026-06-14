@@ -8,7 +8,7 @@ type Dict = Record<string, string>;
 type Params = Record<string, string | number>;
 
 const en: Dict = {
-  'app.name': 'Note Trainer',
+  'app.name': 'Witch Note',
   'header.back': 'Back',
   'header.settings': 'Settings',
   'title.practice': 'Practice mode',
@@ -96,7 +96,7 @@ const en: Dict = {
 };
 
 const nb: Dict = {
-  'app.name': 'Note Trainer',
+  'app.name': 'Witch Note',
   'header.back': 'Tilbake',
   'header.settings': 'Innstillinger',
   'title.practice': 'Øvingsmodus',
