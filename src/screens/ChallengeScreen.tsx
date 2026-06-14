@@ -215,6 +215,7 @@ export default function ChallengeScreen({ settings }: Props) {
           <ScoreGraph
             scores={runs.map((r) => r.correct)}
             width={Math.min(width - 56, 360)}
+            color="#e0935a"
           />
         </View>
 
@@ -324,7 +325,7 @@ const styles = StyleSheet.create({
   recordBanner: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#ff9500',
+    color: '#c2691c',
     marginBottom: 18,
   },
   resultCard: {
@@ -352,7 +353,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#ff9500',
+    color: '#c2691c',
   },
   statLabel: {
     fontSize: 13,
@@ -375,7 +376,7 @@ const styles = StyleSheet.create({
   },
   primaryBtn: {
     marginTop: 28,
-    backgroundColor: '#ff9500',
+    backgroundColor: '#ffd8b0',
     paddingVertical: 16,
     paddingHorizontal: 40,
     borderRadius: 16,
@@ -383,7 +384,7 @@ const styles = StyleSheet.create({
   primaryBtnText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#ffffff',
+    color: '#7a3e0a',
   },
   playRoot: {
     flex: 1,
@@ -416,7 +417,7 @@ const styles = StyleSheet.create({
   playLabel: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ff9500',
+    color: '#c2691c',
   },
   timer: {
     fontSize: 22,
