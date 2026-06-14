@@ -158,6 +158,8 @@ export default function Piano({
 const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 8,
+    flexGrow: 1,
+    justifyContent: 'center',
   },
   board: {
     flexDirection: 'row',

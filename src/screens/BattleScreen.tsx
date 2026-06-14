@@ -297,6 +297,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 28,
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
+    alignSelf: 'center',
   },
   heading: {
     fontSize: 26,
@@ -364,6 +367,9 @@ const styles = StyleSheet.create({
   top: {
     paddingHorizontal: 16,
     alignItems: 'center',
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
+    alignSelf: 'center',
   },
   playHeader: {
     flexDirection: 'row',
@@ -414,6 +420,7 @@ const styles = StyleSheet.create({
   resultsContent: {
     padding: 20,
     paddingBottom: 32,
+    alignItems: 'center',
   },
   resultCard: {
     backgroundColor: '#ffffff',
@@ -422,6 +429,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 2,
     borderColor: 'transparent',
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
   },
   resultCardWin: {
     borderColor: '#5e5ce6',

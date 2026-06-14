@@ -99,8 +99,8 @@ export default function App() {
       <SafeAreaProvider>
         <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
           <StatusBar style="dark" />
-          <View style={styles.column}>
-            <View style={styles.header}>
+          <View style={styles.header}>
+            <View style={styles.headerInner}>
               <View style={styles.headerSide}>
                 {backTarget && (
                   <Pressable onPress={() => setScreen(backTarget)} hitSlop={12}>
@@ -126,22 +126,22 @@ export default function App() {
                 )}
               </View>
             </View>
+          </View>
 
-            <View style={styles.body}>
-              {screen === 'home' && (
-                <HomeScreen
-                  onPractice={() => setScreen('practice')}
-                  onChallenge={() => setScreen('challenge')}
-                  onBattle={() => setScreen('battle')}
-                />
-              )}
-              {screen === 'practice' && <PracticeScreen settings={settings} />}
-              {screen === 'challenge' && <ChallengeScreen settings={settings} />}
-              {screen === 'battle' && <BattleScreen settings={settings} />}
-              {screen === 'settings' && (
-                <SettingsScreen settings={settings} onChange={updateSettings} />
-              )}
-            </View>
+          <View style={styles.body}>
+            {screen === 'home' && (
+              <HomeScreen
+                onPractice={() => setScreen('practice')}
+                onChallenge={() => setScreen('challenge')}
+                onBattle={() => setScreen('battle')}
+              />
+            )}
+            {screen === 'practice' && <PracticeScreen settings={settings} />}
+            {screen === 'challenge' && <ChallengeScreen settings={settings} />}
+            {screen === 'battle' && <BattleScreen settings={settings} />}
+            {screen === 'settings' && (
+              <SettingsScreen settings={settings} onChange={updateSettings} />
+            )}
           </View>
         </SafeAreaView>
       </SafeAreaProvider>
@@ -153,14 +153,13 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: '#f2f2f7',
-    alignItems: 'center',
-  },
-  column: {
-    flex: 1,
-    width: '100%',
-    maxWidth: MAX_CONTENT_WIDTH,
   },
   header: {
+    alignItems: 'center',
+  },
+  headerInner: {
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,

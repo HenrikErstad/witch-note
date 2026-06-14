@@ -17,6 +17,7 @@ import {
   clefScope,
 } from '../music';
 import { useT, LangSetting, resolveLang } from '../i18n';
+import { MAX_CONTENT_WIDTH } from '../layout';
 
 const ROTATION_VALUES: RotationMode[] = ['portrait', 'landscape', 'auto'];
 const DIFFICULTY_VALUES: Difficulty[] = ['easy', 'intermediate', 'expert'];
@@ -170,6 +171,7 @@ export default function SettingsScreen({ settings, onChange }: Props) {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
+      <View style={styles.inner}>
       <ClefCard settings={settings} clef="treble" set={set} toggle={toggleClef} />
       <ClefCard settings={settings} clef="bass" set={set} toggle={toggleClef} />
       <Text style={styles.hint}>{t('settings.rangeHint')}</Text>
@@ -251,6 +253,7 @@ export default function SettingsScreen({ settings, onChange }: Props) {
         </View>
       </View>
       <Text style={styles.hint}>{t('settings.germanNotationHint')}</Text>
+      </View>
     </ScrollView>
   );
 }
@@ -258,6 +261,11 @@ export default function SettingsScreen({ settings, onChange }: Props) {
 const styles = StyleSheet.create({
   content: {
     padding: 16,
+    alignItems: 'center',
+  },
+  inner: {
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
   },
   sectionTitle: {
     fontSize: 13,

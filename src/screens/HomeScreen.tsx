@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useT } from '../i18n';
+import { MAX_CONTENT_WIDTH } from '../layout';
 
 interface Props {
   onPractice: () => void;
@@ -63,6 +64,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   hero: {
     alignItems: 'center',
@@ -80,6 +82,8 @@ const styles = StyleSheet.create({
   },
   buttons: {
     gap: 16,
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
   },
   button: {
     borderRadius: 18,

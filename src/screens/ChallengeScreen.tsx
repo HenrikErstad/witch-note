@@ -281,6 +281,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 28,
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
+    alignSelf: 'center',
   },
   resultsRoot: {
     flex: 1,
@@ -387,6 +390,9 @@ const styles = StyleSheet.create({
   top: {
     paddingHorizontal: 16,
     alignItems: 'center',
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
+    alignSelf: 'center',
   },
   playHeader: {
     flexDirection: 'row',
