@@ -22,7 +22,7 @@ import {
 } from '../music';
 import { playSemitone } from '../sound';
 import { useT } from '../i18n';
-import { MAX_CONTENT_WIDTH } from '../layout';
+import { PHONE_CONTENT_WIDTH } from '../layout';
 
 interface Props {
   settings: Settings;
@@ -82,7 +82,7 @@ export default function PracticeScreen({ settings }: Props) {
     }
   }
 
-  const contentWidth = Math.min(width, MAX_CONTENT_WIDTH);
+  const contentWidth = Math.min(width, PHONE_CONTENT_WIDTH);
   const staffWidth = Math.max(contentWidth - 64, 220);
   // Shrink the staff and keys when vertical space is tight (e.g. landscape).
   const lineGap = landscape ? 9 : 14;
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     alignItems: 'center',
     width: '100%',
-    maxWidth: MAX_CONTENT_WIDTH,
+    maxWidth: PHONE_CONTENT_WIDTH,
     alignSelf: 'center',
   },
   clefLabel: {

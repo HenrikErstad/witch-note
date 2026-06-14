@@ -20,7 +20,7 @@ import {
 } from '../music';
 import { playSemitone } from '../sound';
 import { useT } from '../i18n';
-import { MAX_CONTENT_WIDTH } from '../layout';
+import { MAX_CONTENT_WIDTH, PHONE_CONTENT_WIDTH } from '../layout';
 
 interface Props {
   settings: Settings;
@@ -236,7 +236,7 @@ export default function BattleScreen({ settings }: Props) {
   }
 
   // phase === 'playing'
-  const staffWidth = Math.max(Math.min(width, MAX_CONTENT_WIDTH) - 64, 220);
+  const staffWidth = Math.max(Math.min(width, PHONE_CONTENT_WIDTH) - 64, 220);
   const lineGap = landscape ? 9 : 14;
   const keyHeight = Math.max(96, Math.min(180, Math.round(height * 0.32)));
 
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'center',
     width: '100%',
-    maxWidth: MAX_CONTENT_WIDTH,
+    maxWidth: PHONE_CONTENT_WIDTH,
     alignSelf: 'center',
   },
   playHeader: {
