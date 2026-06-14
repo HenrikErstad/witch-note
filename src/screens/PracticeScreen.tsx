@@ -22,6 +22,7 @@ import {
 } from '../music';
 import { playSemitone } from '../sound';
 import { useT } from '../i18n';
+import { MAX_CONTENT_WIDTH } from '../layout';
 
 interface Props {
   settings: Settings;
@@ -81,7 +82,8 @@ export default function PracticeScreen({ settings }: Props) {
     }
   }
 
-  const staffWidth = Math.max(width - 64, 220);
+  const contentWidth = Math.min(width, MAX_CONTENT_WIDTH);
+  const staffWidth = Math.max(contentWidth - 64, 220);
   // Shrink the staff and keys when vertical space is tight (e.g. landscape).
   const lineGap = landscape ? 9 : 14;
   const keyHeight = Math.max(96, Math.min(180, Math.round(height * 0.32)));

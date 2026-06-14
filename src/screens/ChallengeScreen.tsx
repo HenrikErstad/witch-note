@@ -14,6 +14,7 @@ import Confetti from '../components/Confetti';
 import { Settings, Note, Clef, samePitch, semitone, nextRound, pianoRange } from '../music';
 import { playSemitone } from '../sound';
 import { useT } from '../i18n';
+import { MAX_CONTENT_WIDTH } from '../layout';
 import {
   BestScore,
   ChallengeData,
@@ -227,7 +228,7 @@ export default function ChallengeScreen({ settings }: Props) {
   }
 
   // phase === 'playing'
-  const staffWidth = Math.max(width - 64, 220);
+  const staffWidth = Math.max(Math.min(width, MAX_CONTENT_WIDTH) - 64, 220);
   const lineGap = landscape ? 9 : 14;
   const keyHeight = Math.max(96, Math.min(180, Math.round(height * 0.32)));
 

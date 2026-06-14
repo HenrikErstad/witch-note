@@ -13,6 +13,7 @@ import { Settings } from './src/music';
 import { loadSettings, saveSettings } from './src/storage';
 import { initSound } from './src/sound';
 import { LangProvider, resolveLang, translate } from './src/i18n';
+import { MAX_CONTENT_WIDTH } from './src/layout';
 import GearIcon from './src/components/GearIcon';
 import HomeScreen from './src/screens/HomeScreen';
 import PracticeScreen from './src/screens/PracticeScreen';
@@ -98,44 +99,50 @@ export default function App() {
       <SafeAreaProvider>
         <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
           <StatusBar style="dark" />
-          <View style={styles.header}>
-            <View style={styles.headerSide}>
-              {backTarget && (
-                <Pressable onPress={() => setScreen(backTarget)} hitSlop={12}>
-                  <Text style={styles.headerAction}>{'‹'} {t('header.back')}</Text>
-                </Pressable>
-              )}
+          <View style={styles.column}>
+            <View style={styles.header}>
+              <View style={styles.headerSide}>
+                {backTarget && (
+                  <Pressable onPress={() => setScreen(backTarget)} hitSlop={12}>
+                    <Text style={styles.headerAction}>
+                      {'‹'} {t('header.back')}
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+              <Text style={styles.title}>
+                {screen === 'home' ? '' : t(TITLE_KEY[screen])}
+              </Text>
+              <View style={[styles.headerSide, styles.headerRight]}>
+                {showSettingsButton && (
+                  <Pressable
+                    onPress={openSettings}
+                    hitSlop={12}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('header.settings')}
+                  >
+                    <GearIcon size={24} color="#007aff" />
+                  </Pressable>
+                )}
+              </View>
             </View>
-            <Text style={styles.title}>{t(TITLE_KEY[screen])}</Text>
-            <View style={[styles.headerSide, styles.headerRight]}>
-              {showSettingsButton && (
-                <Pressable
-                  onPress={openSettings}
-                  hitSlop={12}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('header.settings')}
-                >
-                  <GearIcon size={24} color="#007aff" />
-                </Pressable>
+
+            <View style={styles.body}>
+              {screen === 'home' && (
+                <HomeScreen
+                  onPractice={() => setScreen('practice')}
+                  onChallenge={() => setScreen('challenge')}
+                  onBattle={() => setScreen('battle')}
+                />
+              )}
+              {screen === 'practice' && <PracticeScreen settings={settings} />}
+              {screen === 'challenge' && <ChallengeScreen settings={settings} />}
+              {screen === 'battle' && <BattleScreen settings={settings} />}
+              {screen === 'settings' && (
+                <SettingsScreen settings={settings} onChange={updateSettings} />
               )}
             </View>
           </View>
-
-        <View style={styles.body}>
-          {screen === 'home' && (
-            <HomeScreen
-              onPractice={() => setScreen('practice')}
-              onChallenge={() => setScreen('challenge')}
-              onBattle={() => setScreen('battle')}
-            />
-          )}
-          {screen === 'practice' && <PracticeScreen settings={settings} />}
-          {screen === 'challenge' && <ChallengeScreen settings={settings} />}
-          {screen === 'battle' && <BattleScreen settings={settings} />}
-          {screen === 'settings' && (
-            <SettingsScreen settings={settings} onChange={updateSettings} />
-          )}
-        </View>
         </SafeAreaView>
       </SafeAreaProvider>
     </LangProvider>
@@ -146,6 +153,12 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: '#f2f2f7',
+    alignItems: 'center',
+  },
+  column: {
+    flex: 1,
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
   },
   header: {
     flexDirection: 'row',
