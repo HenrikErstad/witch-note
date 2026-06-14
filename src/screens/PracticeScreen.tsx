@@ -108,6 +108,7 @@ export default function PracticeScreen({ settings }: Props) {
       contentContainerStyle={styles.root}
       showsVerticalScrollIndicator={false}
     >
+      <View style={styles.topArea}>
       <View style={styles.top}>
         <Text style={styles.clefLabel}>
           {t(round.clef === 'treble' ? 'clef.trebleFull' : 'clef.bassFull')}
@@ -139,6 +140,7 @@ export default function PracticeScreen({ settings }: Props) {
           <Text style={styles.scoreText}>{t('practice.streak', { n: streak })}</Text>
         </View>
       </View>
+      </View>
 
       <View style={styles.pianoWrap}>
         <Piano
@@ -165,16 +167,19 @@ const styles = StyleSheet.create({
   },
   root: {
     flexGrow: 1,
-    justifyContent: 'space-between',
     paddingVertical: 8,
+  },
+  topArea: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
   },
   top: {
     paddingHorizontal: 16,
-    paddingTop: 8,
     alignItems: 'center',
     width: '100%',
     maxWidth: PHONE_CONTENT_WIDTH,
-    alignSelf: 'center',
   },
   clefLabel: {
     fontSize: 14,

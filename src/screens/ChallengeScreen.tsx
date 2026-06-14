@@ -234,25 +234,28 @@ export default function ChallengeScreen({ settings }: Props) {
 
   return (
     <View style={styles.playRoot}>
-      <View style={styles.top}>
+      <View style={styles.headerWrap}>
         <View style={styles.playHeader}>
           <Text style={styles.playLabel}>{t('title.challenge')}</Text>
           <Text style={[styles.timer, timeLeft <= 10 && styles.timerLow]}>
             {timeLeft}s
           </Text>
         </View>
+      </View>
 
-        <Text style={styles.clefLabel}>
-          {t(round.clef === 'treble' ? 'clef.trebleFull' : 'clef.bassFull')}
-        </Text>
-
-        <View style={styles.card}>
-          <Staff
-            clef={round.clef}
-            note={round.note}
-            width={staffWidth}
-            lineGap={lineGap}
-          />
+      <View style={styles.topArea}>
+        <View style={styles.noteBlock}>
+          <Text style={styles.clefLabel}>
+            {t(round.clef === 'treble' ? 'clef.trebleFull' : 'clef.bassFull')}
+          </Text>
+          <View style={styles.card}>
+            <Staff
+              clef={round.clef}
+              note={round.note}
+              width={staffWidth}
+              lineGap={lineGap}
+            />
+          </View>
         </View>
       </View>
 
@@ -384,22 +387,31 @@ const styles = StyleSheet.create({
   },
   playRoot: {
     flex: 1,
-    justifyContent: 'space-between',
     paddingVertical: 8,
   },
-  top: {
+  headerWrap: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  topArea: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
+  noteBlock: {
     paddingHorizontal: 16,
     alignItems: 'center',
     width: '100%',
     maxWidth: PHONE_CONTENT_WIDTH,
-    alignSelf: 'center',
   },
   playHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    marginBottom: 6,
+    maxWidth: PHONE_CONTENT_WIDTH,
+    paddingHorizontal: 16,
   },
   playLabel: {
     fontSize: 16,
