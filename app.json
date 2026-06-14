@@ -10,6 +10,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.luddig.witchnote",
       "adaptiveIcon": {
         "backgroundColor": "#12051f",
         "foregroundImage": "./assets/android-icon-foreground.png",
