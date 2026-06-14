@@ -29,14 +29,20 @@
     "plugins": [
       "expo-font",
       "expo-splash-screen",
-      ["expo-audio", { "microphonePermission": false }],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false
+        }
+      ],
       "expo-localization",
       "expo-asset"
     ],
     "extra": {
       "eas": {
-        "projectId": "9aa38797-9f32-46c0-964d-4e9186dff4c8"
+        "projectId": "926be137-8dda-4826-b179-d49c903c1bf8"
       }
-    }
+    },
+    "owner": "luddig"
   }
 }
