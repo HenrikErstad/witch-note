@@ -280,38 +280,6 @@ export default function SettingsScreen({ settings, onChange }: Props) {
       </View>
       <Text style={hintStyle}>{t('settings.soundHint')}</Text>
 
-      <Text style={sectionTitleStyle}>{t('settings.appearance')}</Text>
-      <View style={cardStyle}>
-        <View style={styles.colRow}>
-          <Text style={rowLabelStyle}>{t('settings.colorMode')}</Text>
-          <Segmented
-            value={settings.colorMode}
-            onChange={(v) => set({ colorMode: v })}
-            options={COLOR_MODE_VALUES.map((v) => ({
-              value: v,
-              label: t(`colorMode.${v}`),
-            }))}
-          />
-        </View>
-      </View>
-      <Text style={hintStyle}>{t('settings.colorModeHint')}</Text>
-
-      <Text style={sectionTitleStyle}>{t('settings.orientation')}</Text>
-      <View style={cardStyle}>
-        <View style={styles.colRow}>
-          <Text style={rowLabelStyle}>{t('settings.rotation')}</Text>
-          <Segmented
-            value={settings.rotation}
-            onChange={(v) => set({ rotation: v })}
-            options={ROTATION_VALUES.map((v) => ({
-              value: v,
-              label: t(`rotation.${v}`),
-            }))}
-          />
-        </View>
-      </View>
-      <Text style={hintStyle}>{t('settings.rotationHint')}</Text>
-
       <Text style={sectionTitleStyle}>{t('settings.language')}</Text>
       <View style={cardStyle}>
         <View style={styles.colRow}>
@@ -338,6 +306,38 @@ export default function SettingsScreen({ settings, onChange }: Props) {
         </View>
       </View>
       <Text style={hintStyle}>{t('settings.germanNotationHint')}</Text>
+
+      <Text style={sectionTitleStyle}>{t('settings.orientation')}</Text>
+      <View style={cardStyle}>
+        <View style={styles.colRow}>
+          <Text style={rowLabelStyle}>{t('settings.rotation')}</Text>
+          <Segmented
+            value={settings.rotation}
+            onChange={(v) => set({ rotation: v })}
+            options={ROTATION_VALUES.map((v) => ({
+              value: v,
+              label: t(`rotation.${v}`),
+            }))}
+          />
+        </View>
+      </View>
+      <Text style={hintStyle}>{t('settings.rotationHint')}</Text>
+
+      <Text style={sectionTitleStyle}>{t('settings.appearance')}</Text>
+      <View style={cardStyle}>
+        <View style={styles.colRow}>
+          <Text style={rowLabelStyle}>{t('settings.colorMode')}</Text>
+          <Segmented
+            value={settings.colorMode}
+            onChange={(v) => set({ colorMode: v })}
+            options={COLOR_MODE_VALUES.map((v) => ({
+              value: v,
+              label: t(`colorMode.${v}`),
+            }))}
+          />
+        </View>
+      </View>
+      <Text style={hintStyle}>{t('settings.colorModeHint')}</Text>
       </View>
     </ScrollView>
   );
