@@ -81,6 +81,7 @@ export default function App() {
 
   const colorMode = settings?.colorMode;
   useEffect(() => {
+    if (typeof Appearance.setColorScheme !== 'function') return;
     Appearance.setColorScheme(
       colorMode === 'light' || colorMode === 'dark' ? colorMode : null
     );
