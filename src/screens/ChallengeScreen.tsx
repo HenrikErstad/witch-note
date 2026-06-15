@@ -11,8 +11,8 @@ import Staff from '../components/Staff';
 import Piano, { Feedback } from '../components/Piano';
 import ScoreGraph from '../components/ScoreGraph';
 import Confetti from '../components/Confetti';
-import { Settings, Note, Clef, samePitch, semitone, nextRound, pianoRange } from '../music';
-import { playSemitone } from '../sound';
+import { Settings, Note, Clef, samePitch, nextRound, pianoRange } from '../music';
+import { useNotePlayback } from '../useNotePlayback';
 import { useT } from '../i18n';
 import { MAX_CONTENT_WIDTH, PHONE_CONTENT_WIDTH } from '../layout';
 import {
@@ -28,6 +28,7 @@ interface Props {
 }
 
 type Phase = 'ready' | 'playing' | 'results';
+type RoundState = { id: number; clef: Clef; note: Note };
 
 const TURN_SECONDS = 60;
 const FLASH_MS = 350;
@@ -61,9 +62,13 @@ export default function ChallengeScreen({ settings }: Props) {
   const best = data.best[settings.difficulty] ?? null;
   const runs = data.history[settings.difficulty] ?? [];
 
-  const [round, setRound] = useState<{ clef: Clef; note: Note }>(() =>
-    nextRound(settings)
-  );
+  const roundSeq = useRef(0);
+  function makeRound(): RoundState {
+    roundSeq.current += 1;
+    return { id: roundSeq.current, ...nextRound(settings) };
+  }
+
+  const [round, setRound] = useState<RoundState>(() => makeRound());
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [locked, setLocked] = useState(false);
   const [timeLeft, setTimeLeft] = useState(TURN_SECONDS);
@@ -93,6 +98,7 @@ export default function ChallengeScreen({ settings }: Props) {
     setPrevBest(prev);
     setResult(run);
     setIsRecord(record);
+    if (flashTimer.current) clearTimeout(flashTimer.current);
     setPhase('results');
   }, [data, settings.difficulty]);
 
@@ -119,17 +125,18 @@ export default function ChallengeScreen({ settings }: Props) {
     []
   );
 
-  // Play the note's pitch when it appears, if sound is enabled.
-  useEffect(() => {
-    if (phase === 'playing' && settings.sound) {
-      playSemitone(semitone(round.note));
-    }
-  }, [round, phase, settings.sound]);
+  useNotePlayback(
+    round.note,
+    phase === 'playing' && settings.sound,
+    round.id,
+    true
+  );
 
   function startTurn() {
+    if (flashTimer.current) clearTimeout(flashTimer.current);
     correctRef.current = 0;
     totalRef.current = 0;
-    setRound(nextRound(settings));
+    setRound(makeRound());
     setFeedback(null);
     setLocked(false);
     setTimeLeft(TURN_SECONDS);
@@ -144,10 +151,11 @@ export default function ChallengeScreen({ settings }: Props) {
     if (ok) correctRef.current += 1;
     setFeedback({ note, kind: ok ? 'correct' : 'wrong' });
     setLocked(true);
+    if (flashTimer.current) clearTimeout(flashTimer.current);
     flashTimer.current = setTimeout(() => {
       setFeedback(null);
       setLocked(false);
-      setRound(nextRound(settings));
+      setRound(makeRound());
     }, FLASH_MS);
   }
 

@@ -14,11 +14,10 @@ import {
   Note,
   Clef,
   samePitch,
-  semitone,
   nextRound,
   pianoRange,
 } from '../music';
-import { playSemitone } from '../sound';
+import { useNotePlayback } from '../useNotePlayback';
 import { useT } from '../i18n';
 import { MAX_CONTENT_WIDTH, PHONE_CONTENT_WIDTH } from '../layout';
 
@@ -28,6 +27,7 @@ interface Props {
 
 type Phase = 'setup' | 'ready' | 'playing' | 'results';
 type Result = { correct: number; total: number };
+type RoundState = { id: number; clef: Clef; note: Note };
 
 const TURN_SECONDS = 60;
 const FLASH_MS = 350;
@@ -44,9 +44,13 @@ export default function BattleScreen({ settings }: Props) {
   const [results, setResults] = useState<Result[]>([]);
 
   // Per-turn state.
-  const [round, setRound] = useState<{ clef: Clef; note: Note }>(() =>
-    nextRound(settings)
-  );
+  const roundSeq = useRef(0);
+  function makeRound(): RoundState {
+    roundSeq.current += 1;
+    return { id: roundSeq.current, ...nextRound(settings) };
+  }
+
+  const [round, setRound] = useState<RoundState>(() => makeRound());
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [locked, setLocked] = useState(false);
   const [timeLeft, setTimeLeft] = useState(TURN_SECONDS);
@@ -65,8 +69,10 @@ export default function BattleScreen({ settings }: Props) {
     });
     if (current + 1 < numPlayers) {
       setCurrent(current + 1);
+      if (flashTimer.current) clearTimeout(flashTimer.current);
       setPhase('ready');
     } else {
+      if (flashTimer.current) clearTimeout(flashTimer.current);
       setPhase('results');
     }
   }, [current, numPlayers]);
@@ -95,12 +101,12 @@ export default function BattleScreen({ settings }: Props) {
     []
   );
 
-  // Play the note's pitch when it appears, if sound is enabled.
-  useEffect(() => {
-    if (phase === 'playing' && settings.sound) {
-      playSemitone(semitone(round.note));
-    }
-  }, [round, phase, settings.sound]);
+  useNotePlayback(
+    round.note,
+    phase === 'playing' && settings.sound,
+    round.id,
+    true
+  );
 
   function startBattle() {
     setResults(
@@ -111,9 +117,10 @@ export default function BattleScreen({ settings }: Props) {
   }
 
   function startTurn() {
+    if (flashTimer.current) clearTimeout(flashTimer.current);
     correctRef.current = 0;
     totalRef.current = 0;
-    setRound(nextRound(settings));
+    setRound(makeRound());
     setFeedback(null);
     setLocked(false);
     setTimeLeft(TURN_SECONDS);
@@ -128,10 +135,11 @@ export default function BattleScreen({ settings }: Props) {
     if (ok) correctRef.current += 1;
     setFeedback({ note, kind: ok ? 'correct' : 'wrong' });
     setLocked(true);
+    if (flashTimer.current) clearTimeout(flashTimer.current);
     flashTimer.current = setTimeout(() => {
       setFeedback(null);
       setLocked(false);
-      setRound(nextRound(settings));
+      setRound(makeRound());
     }, FLASH_MS);
   }
 

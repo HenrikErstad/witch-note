@@ -28,6 +28,17 @@ export async function initSound(): Promise<void> {
   ready = true;
 }
 
+function stopActivePlayers(): void {
+  for (const player of Object.values(players)) {
+    try {
+      player.pause();
+      void player.seekTo(0);
+    } catch {
+      // ignore transient playback errors
+    }
+  }
+}
+
 // Play the given chromatic pitch (semitone, MIDI-like: C4 = 48).
 export function playSemitone(st: number): void {
   if (!ready) return;
@@ -36,11 +47,12 @@ export function playSemitone(st: number): void {
   if (octave > MAX_OCT) octave = MAX_OCT;
   const player = players[octave];
   if (!player) return;
+  stopActivePlayers();
   const rate = Math.pow(2, (st - 12 * octave) / 12);
   try {
     player.shouldCorrectPitch = false;
     player.setPlaybackRate(rate);
-    player.seekTo(0);
+    void player.seekTo(0);
     player.play();
   } catch {
     // ignore transient playback errors

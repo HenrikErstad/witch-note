@@ -21,6 +21,7 @@ import {
   pianoRange,
 } from '../music';
 import { playSemitone } from '../sound';
+import { useNotePlayback } from '../useNotePlayback';
 import { useT } from '../i18n';
 import { PHONE_CONTENT_WIDTH } from '../layout';
 
@@ -28,13 +29,19 @@ interface Props {
   settings: Settings;
 }
 
+type RoundState = { id: number; clef: Clef; note: Note };
+
 export default function PracticeScreen({ settings }: Props) {
   const t = useT();
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
-  const [round, setRound] = useState<{ clef: Clef; note: Note }>(() =>
-    nextRound(settings)
-  );
+  const roundSeq = useRef(0);
+  function makeRound(): RoundState {
+    roundSeq.current += 1;
+    return { id: roundSeq.current, ...nextRound(settings) };
+  }
+
+  const [round, setRound] = useState<RoundState>(() => makeRound());
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -51,29 +58,27 @@ export default function PracticeScreen({ settings }: Props) {
     }
     if (timer.current) clearTimeout(timer.current);
     setFeedback(null);
-    setRound(nextRound(settings));
+    setRound(makeRound());
   }, [settings]);
 
   useEffect(() => () => {
     if (timer.current) clearTimeout(timer.current);
   }, []);
 
-  // Play the note's pitch each time a new note appears.
-  useEffect(() => {
-    if (settings.sound) playSemitone(semitone(round.note));
-  }, [round, settings.sound]);
+  useNotePlayback(round.note, settings.sound, round.id);
 
   const locked = feedback?.kind === 'correct';
 
   function handlePress(note: Note) {
     if (locked) return;
+    if (timer.current) clearTimeout(timer.current);
     if (samePitch(note, round.note)) {
       setFeedback({ note, kind: 'correct' });
       setScore((s) => s + 1);
       setStreak((s) => s + 1);
       timer.current = setTimeout(() => {
         setFeedback(null);
-        setRound(nextRound(settings));
+        setRound(makeRound());
       }, 850);
     } else {
       setFeedback({ note, kind: 'wrong' });
