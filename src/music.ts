@@ -158,10 +158,10 @@ export const DEFAULT_SETTINGS: Settings = {
   treble: true,
   bass: false,
   trebleMin: noteIndex({ letter: 'C', octave: 4 }), // middle C
-  trebleMax: noteIndex({ letter: 'C', octave: 6 }), // C6
+  trebleMax: noteIndex({ letter: 'C', octave: 5 }), // C5
   bassMin: noteIndex({ letter: 'C', octave: 2 }), // C2
   bassMax: noteIndex({ letter: 'C', octave: 4 }), // middle C
-  difficulty: 'easy',
+  difficulty: 'intermediate',
   sound: true,
   hardcore: false,
   germanNotation: false,
