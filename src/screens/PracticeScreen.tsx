@@ -24,6 +24,7 @@ import { playSemitone } from '../sound';
 import { useNotePlayback } from '../useNotePlayback';
 import { useT } from '../i18n';
 import { PHONE_CONTENT_WIDTH } from '../layout';
+import { useTheme } from '../theme';
 
 interface Props {
   settings: Settings;
@@ -33,6 +34,8 @@ type RoundState = { id: number; clef: Clef; note: Note };
 
 export default function PracticeScreen({ settings }: Props) {
   const t = useT();
+  const theme = useTheme();
+  const c = theme.colors;
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
   const roundSeq = useRef(0);
@@ -94,32 +97,37 @@ export default function PracticeScreen({ settings }: Props) {
   const keyHeight = Math.max(96, Math.min(180, Math.round(height * 0.32)));
 
   let banner = t('practice.prompt');
-  let bannerColor = '#8e8e93';
+  let bannerColor = c.textMuted;
   if (feedback?.kind === 'correct') {
     banner = t('practice.correct', {
       note: noteName(round.note, settings.germanNotation),
     });
-    bannerColor = '#34c759';
+    bannerColor = c.success;
   } else if (feedback?.kind === 'wrong') {
     banner = t('practice.wrong', {
       note: pitchClassName(feedback.note, settings.germanNotation),
     });
-    bannerColor = '#ff3b30';
+    bannerColor = c.danger;
   }
 
   return (
     <ScrollView
-      style={styles.scroll}
+      style={[styles.scroll, { backgroundColor: c.background }]}
       contentContainerStyle={styles.root}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.topArea}>
       <View style={styles.top}>
-        <Text style={styles.clefLabel}>
+        <Text style={[styles.clefLabel, { color: c.textMuted }]}>
           {t(round.clef === 'treble' ? 'clef.trebleFull' : 'clef.bassFull')}
         </Text>
 
-        <View style={styles.card}>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: c.staffCard, shadowColor: c.shadow },
+          ]}
+        >
           <Staff
             clef={round.clef}
             note={round.note}
@@ -133,16 +141,22 @@ export default function PracticeScreen({ settings }: Props) {
         {settings.sound && (
           <Pressable
             onPress={() => playSemitone(semitone(round.note))}
-            style={styles.hearBtn}
+            style={[styles.hearBtn, { backgroundColor: c.primaryMuted }]}
             hitSlop={8}
           >
-            <Text style={styles.hearBtnText}>{t('practice.hear')}</Text>
+            <Text style={[styles.hearBtnText, { color: c.primary }]}>
+              {t('practice.hear')}
+            </Text>
           </Pressable>
         )}
 
         <View style={styles.scoreRow}>
-          <Text style={styles.scoreText}>{t('practice.score', { n: score })}</Text>
-          <Text style={styles.scoreText}>{t('practice.streak', { n: streak })}</Text>
+          <Text style={[styles.scoreText, { color: c.textSecondary }]}>
+            {t('practice.score', { n: score })}
+          </Text>
+          <Text style={[styles.scoreText, { color: c.textSecondary }]}>
+            {t('practice.streak', { n: streak })}
+          </Text>
         </View>
       </View>
       </View>

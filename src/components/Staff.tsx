@@ -7,6 +7,7 @@ import {
   MIDDLE_LINE_NOTE,
   noteIndex,
 } from '../music';
+import { useTheme } from '../theme';
 
 interface Props {
   clef: Clef;
@@ -15,9 +16,9 @@ interface Props {
   lineGap?: number; // distance between adjacent staff lines (one staff space)
 }
 
-const INK = '#1c1c1e';
-
 export default function Staff({ clef, note, width, lineGap = 14 }: Props) {
+  const theme = useTheme();
+  const ink = theme.colors.staffInk;
   const LINE_GAP = lineGap;
   const HEIGHT = LINE_GAP * 15; // room for the staff plus ledger lines / clef overflow
   const MIDDLE_LINE_Y = HEIGHT / 2;
@@ -68,7 +69,7 @@ export default function Staff({ clef, note, width, lineGap = 14 }: Props) {
           y1={y}
           x2={width - 12}
           y2={y}
-          stroke={INK}
+          stroke={ink}
           strokeWidth={1.4}
         />
       ))}
@@ -77,7 +78,7 @@ export default function Staff({ clef, note, width, lineGap = 14 }: Props) {
       <SvgText
         x={18}
         y={clefBaselineY}
-        fill={INK}
+        fill={ink}
         fontSize={clefFontSize}
         fontFamily="Bravura"
       >
@@ -92,7 +93,7 @@ export default function Staff({ clef, note, width, lineGap = 14 }: Props) {
           y1={y}
           x2={noteX + ledgerHalf}
           y2={y}
-          stroke={INK}
+          stroke={ink}
           strokeWidth={1.6}
         />
       ))}
@@ -102,7 +103,7 @@ export default function Staff({ clef, note, width, lineGap = 14 }: Props) {
         <SvgText
           x={noteX - noteRx - LINE_GAP * 0.5}
           y={noteY}
-          fill={INK}
+          fill={ink}
           fontSize={4 * LINE_GAP}
           fontFamily="Bravura"
           textAnchor="end"
@@ -113,7 +114,7 @@ export default function Staff({ clef, note, width, lineGap = 14 }: Props) {
 
       {/* notehead (slightly tilted oval) */}
       <G transform={`rotate(-18 ${noteX} ${noteY})`}>
-        <Ellipse cx={noteX} cy={noteY} rx={noteRx} ry={noteRy} fill={INK} />
+        <Ellipse cx={noteX} cy={noteY} rx={noteRx} ry={noteRy} fill={ink} />
       </G>
     </Svg>
   );

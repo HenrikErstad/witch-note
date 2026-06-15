@@ -2,6 +2,7 @@ import React from 'react';
 import { Image, View, Text, Pressable, StyleSheet } from 'react-native';
 import { useT } from '../i18n';
 import { PHONE_CONTENT_WIDTH } from '../layout';
+import { useTheme } from '../theme';
 
 interface Props {
   onPractice: () => void;
@@ -11,15 +12,21 @@ interface Props {
 
 export default function HomeScreen({ onPractice, onChallenge, onBattle }: Props) {
   const t = useT();
+  const theme = useTheme();
+  const c = theme.colors;
+  const buttons = theme.homeButtons;
+  const logoSource = theme.dark
+    ? require('../../assets/android-icon-monochrome.png')
+    : require('../../assets/logo-monochrome-inverted.png');
   return (
     <View style={styles.root}>
       <View style={styles.hero}>
         <Image
-          source={require('../../assets/logo-monochrome-inverted.png')}
+          source={logoSource}
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.title}>{t('app.name')}</Text>
+        <Text style={[styles.title, { color: c.text }]}>{t('app.name')}</Text>
       </View>
 
       <View style={styles.buttons}>
@@ -27,14 +34,14 @@ export default function HomeScreen({ onPractice, onChallenge, onBattle }: Props)
           onPress={onPractice}
           style={({ pressed }) => [
             styles.button,
-            styles.practice,
+            { backgroundColor: buttons.practice.background },
             pressed && styles.pressed,
           ]}
         >
-          <Text style={[styles.buttonTitle, styles.practiceTitle]}>
+          <Text style={[styles.buttonTitle, { color: buttons.practice.title }]}>
             {t('home.practice')}
           </Text>
-          <Text style={[styles.buttonSub, styles.practiceSub]}>
+          <Text style={[styles.buttonSub, { color: buttons.practice.subtitle }]}>
             {t('home.practiceSub')}
           </Text>
         </Pressable>
@@ -43,14 +50,14 @@ export default function HomeScreen({ onPractice, onChallenge, onBattle }: Props)
           onPress={onChallenge}
           style={({ pressed }) => [
             styles.button,
-            styles.challenge,
+            { backgroundColor: buttons.challenge.background },
             pressed && styles.pressed,
           ]}
         >
-          <Text style={[styles.buttonTitle, styles.challengeTitle]}>
+          <Text style={[styles.buttonTitle, { color: buttons.challenge.title }]}>
             {t('home.challenge')}
           </Text>
-          <Text style={[styles.buttonSub, styles.challengeSub]}>
+          <Text style={[styles.buttonSub, { color: buttons.challenge.subtitle }]}>
             {t('home.challengeSub')}
           </Text>
         </Pressable>
@@ -59,14 +66,14 @@ export default function HomeScreen({ onPractice, onChallenge, onBattle }: Props)
           onPress={onBattle}
           style={({ pressed }) => [
             styles.button,
-            styles.battle,
+            { backgroundColor: buttons.battle.background },
             pressed && styles.pressed,
           ]}
         >
-          <Text style={[styles.buttonTitle, styles.battleTitle]}>
+          <Text style={[styles.buttonTitle, { color: buttons.battle.title }]}>
             {t('home.battle')}
           </Text>
-          <Text style={[styles.buttonSub, styles.battleSub]}>
+          <Text style={[styles.buttonSub, { color: buttons.battle.subtitle }]}>
             {t('home.battleSub')}
           </Text>
         </Pressable>

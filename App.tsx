@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import {
+  Appearance,
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  useColorScheme,
+} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import {
   SafeAreaProvider,
@@ -13,6 +20,7 @@ import { Settings } from './src/music';
 import { loadSettings, saveSettings } from './src/storage';
 import { initSound } from './src/sound';
 import { LangProvider, resolveLang, translate } from './src/i18n';
+import { ThemeProvider, THEMES, resolveColorMode } from './src/theme';
 import { MAX_CONTENT_WIDTH } from './src/layout';
 import GearIcon from './src/components/GearIcon';
 import HomeScreen from './src/screens/HomeScreen';
@@ -34,6 +42,7 @@ const TITLE_KEY: Record<Screen, string> = {
 };
 
 export default function App() {
+  const systemColorScheme = useColorScheme();
   const [fontsLoaded, fontError] = useFonts({
     Bravura: require('./assets/Bravura.otf'),
   });
@@ -70,6 +79,13 @@ export default function App() {
     }
   }, [rotation]);
 
+  const colorMode = settings?.colorMode;
+  useEffect(() => {
+    Appearance.setColorScheme(
+      colorMode === 'light' || colorMode === 'dark' ? colorMode : null
+    );
+  }, [colorMode]);
+
   if (!ready || !settings) return null;
 
   function updateSettings(next: Settings) {
@@ -93,59 +109,66 @@ export default function App() {
   const lang = resolveLang(settings.language);
   const t = (key: string, params?: Record<string, string | number>) =>
     translate(lang, key, params);
+  const theme = THEMES[resolveColorMode(settings.colorMode, systemColorScheme)];
+  const c = theme.colors;
 
   return (
-    <LangProvider value={lang}>
-      <SafeAreaProvider>
-        <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
-          <StatusBar style="dark" />
-          <View style={styles.header}>
-            <View style={styles.headerInner}>
-              <View style={styles.headerSide}>
-                {backTarget && (
-                  <Pressable onPress={() => setScreen(backTarget)} hitSlop={12}>
-                    <Text style={styles.headerAction}>
-                      {'‹'} {t('header.back')}
-                    </Text>
-                  </Pressable>
-                )}
-              </View>
-              <Text style={styles.title}>
-                {screen === 'home' ? '' : t(TITLE_KEY[screen])}
-              </Text>
-              <View style={[styles.headerSide, styles.headerRight]}>
-                {showSettingsButton && (
-                  <Pressable
-                    onPress={openSettings}
-                    hitSlop={12}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('header.settings')}
-                  >
-                    <GearIcon size={24} color="#007aff" />
-                  </Pressable>
-                )}
+    <ThemeProvider value={theme}>
+      <LangProvider value={lang}>
+        <SafeAreaProvider>
+          <SafeAreaView
+            style={[styles.safe, { backgroundColor: c.background }]}
+            edges={['top', 'bottom', 'left', 'right']}
+          >
+            <StatusBar style={theme.statusBarStyle} />
+            <View style={styles.header}>
+              <View style={styles.headerInner}>
+                <View style={styles.headerSide}>
+                  {backTarget && (
+                    <Pressable onPress={() => setScreen(backTarget)} hitSlop={12}>
+                      <Text style={[styles.headerAction, { color: c.primary }]}>
+                        {'‹'} {t('header.back')}
+                      </Text>
+                    </Pressable>
+                  )}
+                </View>
+                <Text style={[styles.title, { color: c.text }]}>
+                  {screen === 'home' ? '' : t(TITLE_KEY[screen])}
+                </Text>
+                <View style={[styles.headerSide, styles.headerRight]}>
+                  {showSettingsButton && (
+                    <Pressable
+                      onPress={openSettings}
+                      hitSlop={12}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('header.settings')}
+                    >
+                      <GearIcon size={24} color={c.primary} />
+                    </Pressable>
+                  )}
+                </View>
               </View>
             </View>
-          </View>
 
-          <View style={styles.body}>
-            {screen === 'home' && (
-              <HomeScreen
-                onPractice={() => setScreen('practice')}
-                onChallenge={() => setScreen('challenge')}
-                onBattle={() => setScreen('battle')}
-              />
-            )}
-            {screen === 'practice' && <PracticeScreen settings={settings} />}
-            {screen === 'challenge' && <ChallengeScreen settings={settings} />}
-            {screen === 'battle' && <BattleScreen settings={settings} />}
-            {screen === 'settings' && (
-              <SettingsScreen settings={settings} onChange={updateSettings} />
-            )}
-          </View>
-        </SafeAreaView>
-      </SafeAreaProvider>
-    </LangProvider>
+            <View style={[styles.body, { backgroundColor: c.background }]}>
+              {screen === 'home' && (
+                <HomeScreen
+                  onPractice={() => setScreen('practice')}
+                  onChallenge={() => setScreen('challenge')}
+                  onBattle={() => setScreen('battle')}
+                />
+              )}
+              {screen === 'practice' && <PracticeScreen settings={settings} />}
+              {screen === 'challenge' && <ChallengeScreen settings={settings} />}
+              {screen === 'battle' && <BattleScreen settings={settings} />}
+              {screen === 'settings' && (
+                <SettingsScreen settings={settings} onChange={updateSettings} />
+              )}
+            </View>
+          </SafeAreaView>
+        </SafeAreaProvider>
+      </LangProvider>
+    </ThemeProvider>
   );
 }
 

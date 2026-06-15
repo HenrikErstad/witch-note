@@ -7,6 +7,7 @@ import {
   pitchClassName,
   SHARP_AFTER,
 } from '../music';
+import { useTheme } from '../theme';
 
 export type Feedback = { note: Note; kind: 'correct' | 'wrong' } | null;
 
@@ -60,6 +61,8 @@ export default function Piano({
   german = false,
   keyHeight = 180,
 }: Props) {
+  const theme = useTheme();
+  const p = theme.piano;
   const whites: Note[] = [];
   for (let i = minIndex; i <= maxIndex; i++) whites.push(noteFromIndex(i));
 
@@ -81,8 +84,8 @@ export default function Piano({
         {whites.map((note, idx) => {
           const fb = fbKind(note);
           const bg =
-            fb === 'correct' ? CORRECT : fb === 'wrong' ? WRONG : '#ffffff';
-          const labelColor = fb ? '#ffffff' : '#3a3a3c';
+            fb === 'correct' ? CORRECT : fb === 'wrong' ? WRONG : p.white;
+          const labelColor = fb ? '#ffffff' : p.whiteLabel;
           const enh = enharmonicWhites
             ? whiteEnharmonic(note.letter, accidentalStyle, german)
             : null;
@@ -92,7 +95,14 @@ export default function Piano({
               key={`w${idx}`}
               disabled={disabled}
               onPress={() => onPressKey(note)}
-              style={[styles.whiteKey, { backgroundColor: bg, height: whiteH }]}
+                style={[
+                  styles.whiteKey,
+                  {
+                    backgroundColor: bg,
+                    borderColor: p.whiteBorder,
+                    height: whiteH,
+                  },
+                ]}
             >
               {showLabels && (
                 <View style={styles.whiteLabelWrap}>
@@ -104,7 +114,7 @@ export default function Piano({
                     <Text
                       style={[
                         styles.enharmonic,
-                        { color: fb ? '#ffffff' : '#8e8e93' },
+                        { color: fb ? '#ffffff' : p.whiteMuted },
                       ]}
                     >
                       {enh}
@@ -129,7 +139,7 @@ export default function Piano({
               : { ...note, accidental: 'sharp' };
           const fb = fbKind(blackNote);
           const bg =
-            fb === 'correct' ? CORRECT : fb === 'wrong' ? WRONG : '#1c1c1e';
+            fb === 'correct' ? CORRECT : fb === 'wrong' ? WRONG : p.black;
           const left = (idx + 1) * WHITE_W - BLACK_W / 2;
           return (
             <Pressable
@@ -142,9 +152,11 @@ export default function Piano({
               ]}
             >
               {showLabels && blackKeysActive && (
-                <Text style={styles.blackLabel}>
+                <Text style={[styles.blackLabel, { color: p.blackLabel }]}>
                   {pitchClassName(blackNote, german)}
-                  <Text style={styles.blackOctave}>{blackNote.octave}</Text>
+                  <Text style={[styles.blackOctave, { color: p.blackLabel }]}>
+                    {blackNote.octave}
+                  </Text>
                 </Text>
               )}
             </Pressable>

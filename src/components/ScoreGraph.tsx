@@ -1,5 +1,6 @@
 import React from 'react';
 import Svg, { Rect, Line, Text as SvgText } from 'react-native-svg';
+import { useTheme } from '../theme';
 
 interface Props {
   scores: number[]; // oldest -> newest
@@ -8,16 +9,17 @@ interface Props {
   color?: string; // colour of the most recent (latest) bar
 }
 
-const MUTED = '#ffd8a8'; // lighter shade for previous runs
-const AXIS = '#e5e5ea';
-const LABEL = '#8e8e93';
-
 export default function ScoreGraph({
   scores,
   width,
   height = 130,
-  color = '#ff9500',
+  color,
 }: Props) {
+  const theme = useTheme();
+  const axis = theme.chart.axis;
+  const label = theme.chart.label;
+  const muted = theme.chart.mutedBar;
+  const activeColor = color ?? (theme.dark ? theme.colors.primary : '#ff9500');
   const padLeft = 26;
   const padBottom = 16;
   const padTop = 10;
@@ -33,12 +35,12 @@ export default function ScoreGraph({
   return (
     <Svg width={width} height={height}>
       {/* baseline + max gridline */}
-      <Line x1={padLeft} y1={baseY} x2={width - 4} y2={baseY} stroke={AXIS} strokeWidth={1} />
-      <Line x1={padLeft} y1={padTop} x2={width - 4} y2={padTop} stroke={AXIS} strokeWidth={1} />
-      <SvgText x={padLeft - 6} y={padTop + 4} fill={LABEL} fontSize={10} textAnchor="end">
+      <Line x1={padLeft} y1={baseY} x2={width - 4} y2={baseY} stroke={axis} strokeWidth={1} />
+      <Line x1={padLeft} y1={padTop} x2={width - 4} y2={padTop} stroke={axis} strokeWidth={1} />
+      <SvgText x={padLeft - 6} y={padTop + 4} fill={label} fontSize={10} textAnchor="end">
         {maxV}
       </SvgText>
-      <SvgText x={padLeft - 6} y={baseY + 3} fill={LABEL} fontSize={10} textAnchor="end">
+      <SvgText x={padLeft - 6} y={baseY + 3} fill={label} fontSize={10} textAnchor="end">
         0
       </SvgText>
 
@@ -55,7 +57,7 @@ export default function ScoreGraph({
             width={barW}
             height={Math.max(h, 1)}
             rx={2}
-            fill={isLast ? color : MUTED}
+            fill={isLast ? activeColor : muted}
           />
         );
       })}

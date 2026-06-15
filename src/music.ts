@@ -4,6 +4,7 @@
 // and shifts the sounding pitch (and which piano key it maps to).
 
 import type { LangSetting } from './i18n';
+import type { ColorModeSetting } from './theme';
 
 export type Letter = 'C' | 'D' | 'E' | 'F' | 'G' | 'A' | 'B';
 export type Clef = 'treble' | 'bass';
@@ -152,6 +153,7 @@ export interface Settings {
   germanNotation: boolean; // name B-natural "H" (German/Norwegian convention)
   rotation: RotationMode; // lock to portrait/landscape, or follow the device
   language: LangSetting; // 'system' follows the device locale
+  colorMode: ColorModeSetting; // 'system' follows the device appearance
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -167,6 +169,7 @@ export const DEFAULT_SETTINGS: Settings = {
   germanNotation: false,
   rotation: 'auto',
   language: 'system',
+  colorMode: 'system',
 };
 
 export function clefRangeBounds(s: Settings, clef: Clef): { min: number; max: number } {

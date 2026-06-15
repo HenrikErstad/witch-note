@@ -73,6 +73,9 @@ const en: Dict = {
   'settings.playSound': 'Play note sound',
   'settings.soundHint':
     'Plays the pitch when a new note appears, and shows a "Hear note" button.',
+  'settings.appearance': 'Appearance',
+  'settings.colorMode': 'Color mode',
+  'settings.colorModeHint': 'System follows your device light or dark mode.',
   'settings.orientation': 'Orientation',
   'settings.rotation': 'Screen rotation',
   'settings.rotationHint':
@@ -89,6 +92,10 @@ const en: Dict = {
   'rotation.portrait': 'Portrait',
   'rotation.landscape': 'Landscape',
   'rotation.auto': 'Auto',
+
+  'colorMode.system': 'System',
+  'colorMode.light': 'Light',
+  'colorMode.dark': 'Dark',
 
   'language.system': 'System',
   'language.en': 'English',
@@ -161,6 +168,9 @@ const nb: Dict = {
   'settings.playSound': 'Spill notelyd',
   'settings.soundHint':
     'Spiller tonen når en ny note vises, og viser en «Hør note»-knapp.',
+  'settings.appearance': 'Utseende',
+  'settings.colorMode': 'Fargemodus',
+  'settings.colorModeHint': 'System følger lys eller mørk modus på enheten.',
   'settings.orientation': 'Skjermretning',
   'settings.rotation': 'Skjermrotasjon',
   'settings.rotationHint':
@@ -177,6 +187,10 @@ const nb: Dict = {
   'rotation.portrait': 'Stående',
   'rotation.landscape': 'Liggende',
   'rotation.auto': 'Auto',
+
+  'colorMode.system': 'System',
+  'colorMode.light': 'Lys',
+  'colorMode.dark': 'Mørk',
 
   'language.system': 'System',
   'language.en': 'English',

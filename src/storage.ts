@@ -3,6 +3,7 @@ import { Settings, DEFAULT_SETTINGS, clefScope, Difficulty } from './music';
 import { resolveLang } from './i18n';
 
 const KEY = 'witch-note:settings:v2';
+const COLOR_MODES = ['system', 'light', 'dark'];
 
 export async function loadSettings(): Promise<Settings> {
   try {
@@ -21,6 +22,9 @@ export async function loadSettings(): Promise<Settings> {
     // If the stored data predates this field, default it from the language.
     if (parsed.germanNotation === undefined) {
       merged.germanNotation = resolveLang(merged.language) === 'nb';
+    }
+    if (!COLOR_MODES.includes(merged.colorMode)) {
+      merged.colorMode = DEFAULT_SETTINGS.colorMode;
     }
 
     // Keep each clef's range valid and within its scope.

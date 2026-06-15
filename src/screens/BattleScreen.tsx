@@ -20,6 +20,7 @@ import {
 import { useNotePlayback } from '../useNotePlayback';
 import { useT } from '../i18n';
 import { MAX_CONTENT_WIDTH, PHONE_CONTENT_WIDTH } from '../layout';
+import { useTheme } from '../theme';
 
 interface Props {
   settings: Settings;
@@ -37,6 +38,9 @@ export default function BattleScreen({ settings }: Props) {
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
   const t = useT();
+  const theme = useTheme();
+  const c = theme.colors;
+  const battleColors = theme.homeButtons.battle;
 
   const [phase, setPhase] = useState<Phase>('setup');
   const [numPlayers, setNumPlayers] = useState(2);
@@ -147,8 +151,10 @@ export default function BattleScreen({ settings }: Props) {
 
   if (phase === 'setup') {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.heading}>{t('battle.players')}</Text>
+      <View style={[styles.centered, { backgroundColor: c.background }]}>
+        <Text style={[styles.heading, { color: c.text }]}>
+          {t('battle.players')}
+        </Text>
         <View style={styles.playerRow}>
           {PLAYER_OPTIONS.map((n) => {
             const active = n === numPlayers;
@@ -156,12 +162,17 @@ export default function BattleScreen({ settings }: Props) {
               <Pressable
                 key={n}
                 onPress={() => setNumPlayers(n)}
-                style={[styles.playerChip, active && styles.playerChipActive]}
+                style={[
+                  styles.playerChip,
+                  { backgroundColor: c.surfaceMuted },
+                  active && { backgroundColor: battleColors.background },
+                ]}
               >
                 <Text
                   style={[
                     styles.playerChipText,
-                    active && styles.playerChipTextActive,
+                    { color: c.textSecondary },
+                    active && { color: battleColors.title },
                   ]}
                 >
                   {n}
@@ -170,11 +181,16 @@ export default function BattleScreen({ settings }: Props) {
             );
           })}
         </View>
-        <Text style={styles.note}>
+        <Text style={[styles.note, { color: c.textMuted }]}>
           {t('battle.setupNote', { s: TURN_SECONDS })}
         </Text>
-        <Pressable onPress={startBattle} style={styles.primaryBtn}>
-          <Text style={styles.primaryBtnText}>{t('battle.start')}</Text>
+        <Pressable
+          onPress={startBattle}
+          style={[styles.primaryBtn, { backgroundColor: battleColors.background }]}
+        >
+          <Text style={[styles.primaryBtnText, { color: battleColors.title }]}>
+            {t('battle.start')}
+          </Text>
         </Pressable>
       </View>
     );
@@ -182,16 +198,23 @@ export default function BattleScreen({ settings }: Props) {
 
   if (phase === 'ready') {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.playerTag}>
+      <View style={[styles.centered, { backgroundColor: c.background }]}>
+        <Text style={[styles.playerTag, { color: battleColors.title }]}>
           {t('battle.player', { n: current + 1 })}
         </Text>
-        <Text style={styles.heading}>{t('battle.getReady')}</Text>
-        <Text style={styles.note}>
+        <Text style={[styles.heading, { color: c.text }]}>
+          {t('battle.getReady')}
+        </Text>
+        <Text style={[styles.note, { color: c.textMuted }]}>
           {t('battle.readyNote', { n: current + 1, s: TURN_SECONDS })}
         </Text>
-        <Pressable onPress={startTurn} style={styles.primaryBtn}>
-          <Text style={styles.primaryBtnText}>{t('battle.startTurn')}</Text>
+        <Pressable
+          onPress={startTurn}
+          style={[styles.primaryBtn, { backgroundColor: battleColors.background }]}
+        >
+          <Text style={[styles.primaryBtnText, { color: battleColors.title }]}>
+            {t('battle.startTurn')}
+          </Text>
         </Pressable>
       </View>
     );
@@ -208,36 +231,61 @@ export default function BattleScreen({ settings }: Props) {
       0
     );
     return (
-      <ScrollView contentContainerStyle={styles.resultsContent}>
-        <Text style={styles.heading}>{t('battle.results')}</Text>
+      <ScrollView
+        style={{ backgroundColor: c.background }}
+        contentContainerStyle={styles.resultsContent}
+      >
+        <Text style={[styles.heading, { color: c.text }]}>
+          {t('battle.results')}
+        </Text>
         {results.map((r, i) => {
           const isWinner = i === best && r.total > 0;
           return (
             <View
               key={i}
-              style={[styles.resultCard, isWinner && styles.resultCardWin]}
+              style={[
+                styles.resultCard,
+                { backgroundColor: c.surface },
+                isWinner && [
+                  styles.resultCardWin,
+                  { borderColor: battleColors.title },
+                ],
+              ]}
             >
               <View style={styles.resultHeader}>
-                <Text style={styles.resultPlayer}>
+                <Text style={[styles.resultPlayer, { color: c.text }]}>
                   {t('battle.player', { n: i + 1 })}
                 </Text>
                 {isWinner && <Text style={styles.crown}>{'👑'}</Text>}
               </View>
               <View style={styles.resultStats}>
                 <View style={styles.stat}>
-                  <Text style={styles.statValue}>{r.correct}</Text>
-                  <Text style={styles.statLabel}>{t('battle.notesCorrect')}</Text>
+                  <Text style={[styles.statValue, { color: battleColors.title }]}>
+                    {r.correct}
+                  </Text>
+                  <Text style={[styles.statLabel, { color: c.textMuted }]}>
+                    {t('battle.notesCorrect')}
+                  </Text>
                 </View>
                 <View style={styles.stat}>
-                  <Text style={styles.statValue}>{accuracy(r)}%</Text>
-                  <Text style={styles.statLabel}>{t('battle.accuracy')}</Text>
+                  <Text style={[styles.statValue, { color: battleColors.title }]}>
+                    {accuracy(r)}%
+                  </Text>
+                  <Text style={[styles.statLabel, { color: c.textMuted }]}>
+                    {t('battle.accuracy')}
+                  </Text>
                 </View>
               </View>
             </View>
           );
         })}
-        <Pressable onPress={() => setPhase('setup')} style={styles.primaryBtn}>
-          <Text style={styles.primaryBtnText}>{t('battle.playAgain')}</Text>
+        <Pressable
+          onPress={() => setPhase('setup')}
+          style={[styles.primaryBtn, { backgroundColor: battleColors.background }]}
+        >
+          <Text style={[styles.primaryBtnText, { color: battleColors.title }]}>
+            {t('battle.playAgain')}
+          </Text>
         </Pressable>
       </ScrollView>
     );
@@ -249,13 +297,19 @@ export default function BattleScreen({ settings }: Props) {
   const keyHeight = Math.max(96, Math.min(180, Math.round(height * 0.32)));
 
   return (
-    <View style={styles.playRoot}>
+    <View style={[styles.playRoot, { backgroundColor: c.background }]}>
       <View style={styles.headerWrap}>
         <View style={styles.playHeader}>
-          <Text style={styles.playPlayer}>
+          <Text style={[styles.playPlayer, { color: battleColors.title }]}>
             {t('battle.player', { n: current + 1 })}
           </Text>
-          <Text style={[styles.timer, timeLeft <= 10 && styles.timerLow]}>
+          <Text
+            style={[
+              styles.timer,
+              { color: c.text },
+              timeLeft <= 10 && { color: c.danger },
+            ]}
+          >
             {timeLeft}s
           </Text>
         </View>
@@ -263,10 +317,15 @@ export default function BattleScreen({ settings }: Props) {
 
       <View style={styles.topArea}>
         <View style={styles.noteBlock}>
-          <Text style={styles.clefLabel}>
+          <Text style={[styles.clefLabel, { color: c.textMuted }]}>
             {t(round.clef === 'treble' ? 'clef.trebleFull' : 'clef.bassFull')}
           </Text>
-          <View style={styles.card}>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: c.staffCard, shadowColor: c.shadow },
+            ]}
+          >
             <Staff
               clef={round.clef}
               note={round.note}

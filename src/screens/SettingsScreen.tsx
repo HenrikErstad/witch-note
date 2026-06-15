@@ -18,10 +18,12 @@ import {
 } from '../music';
 import { useT, LangSetting, resolveLang } from '../i18n';
 import { MAX_CONTENT_WIDTH } from '../layout';
+import { ColorModeSetting, useTheme } from '../theme';
 
 const ROTATION_VALUES: RotationMode[] = ['portrait', 'landscape', 'auto'];
 const DIFFICULTY_VALUES: Difficulty[] = ['easy', 'intermediate', 'expert'];
 const LANGUAGE_VALUES: LangSetting[] = ['system', 'en', 'nb'];
+const COLOR_MODE_VALUES: ColorModeSetting[] = ['system', 'light', 'dark'];
 
 function Segmented<T extends string>({
   value,
@@ -32,18 +34,30 @@ function Segmented<T extends string>({
   onChange: (v: T) => void;
   options: { value: T; label: string }[];
 }) {
+  const theme = useTheme();
+  const c = theme.colors;
   return (
-    <View style={styles.segment}>
+    <View style={[styles.segment, { backgroundColor: c.surfaceMuted }]}>
       {options.map((opt) => {
         const active = opt.value === value;
         return (
           <Pressable
             key={opt.value}
             onPress={() => onChange(opt.value)}
-            style={[styles.segmentBtn, active && styles.segmentBtnActive]}
+            style={[
+              styles.segmentBtn,
+              active && [
+                styles.segmentBtnActive,
+                { backgroundColor: c.surfaceElevated, shadowColor: c.shadow },
+              ],
+            ]}
           >
             <Text
-              style={[styles.segmentText, active && styles.segmentTextActive]}
+              style={[
+                styles.segmentText,
+                { color: c.textSecondary },
+                active && [styles.segmentTextActive, { color: c.primary }],
+              ]}
             >
               {opt.label}
             </Text>
@@ -72,22 +86,47 @@ function Stepper({
   canDec: boolean;
   canInc: boolean;
 }) {
+  const theme = useTheme();
+  const c = theme.colors;
+  const activeText = theme.dark ? c.background : '#ffffff';
   return (
     <View style={styles.stepper}>
       <Pressable
         disabled={!canDec}
         onPress={onDec}
-        style={[styles.stepBtn, !canDec && styles.stepBtnOff]}
+        style={[
+          styles.stepBtn,
+          { backgroundColor: c.primary },
+          !canDec && [styles.stepBtnOff, { backgroundColor: c.surfaceMuted }],
+        ]}
       >
-        <Text style={styles.stepBtnText}>-</Text>
+        <Text
+          style={[
+            styles.stepBtnText,
+            { color: canDec ? activeText : c.textSubtle },
+          ]}
+        >
+          -
+        </Text>
       </Pressable>
-      <Text style={styles.stepValue}>{value}</Text>
+      <Text style={[styles.stepValue, { color: c.text }]}>{value}</Text>
       <Pressable
         disabled={!canInc}
         onPress={onInc}
-        style={[styles.stepBtn, !canInc && styles.stepBtnOff]}
+        style={[
+          styles.stepBtn,
+          { backgroundColor: c.primary },
+          !canInc && [styles.stepBtnOff, { backgroundColor: c.surfaceMuted }],
+        ]}
       >
-        <Text style={styles.stepBtnText}>+</Text>
+        <Text
+          style={[
+            styles.stepBtnText,
+            { color: canInc ? activeText : c.textSubtle },
+          ]}
+        >
+          +
+        </Text>
       </Pressable>
     </View>
   );
@@ -105,6 +144,8 @@ function ClefCard({
   toggle: (clef: Clef, value: boolean) => void;
 }) {
   const t = useT();
+  const theme = useTheme();
+  const c = theme.colors;
   const enabled = clef === 'treble' ? settings.treble : settings.bass;
   const scope = clefScope(clef);
   const min = clef === 'treble' ? settings.trebleMin : settings.bassMin;
@@ -116,19 +157,28 @@ function ClefCard({
 
   return (
     <>
-      <Text style={styles.sectionTitle}>
+      <Text style={[styles.sectionTitle, { color: c.textMuted }]}>
         {t(clef === 'treble' ? 'clef.trebleFull' : 'clef.bassFull')}
       </Text>
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: c.surface }]}>
         <View style={styles.row}>
-          <Text style={styles.rowLabel}>{t('settings.enabled')}</Text>
-          <Switch value={enabled} onValueChange={(v) => toggle(clef, v)} />
+          <Text style={[styles.rowLabel, { color: c.text }]}>
+            {t('settings.enabled')}
+          </Text>
+          <Switch
+            value={enabled}
+            onValueChange={(v) => toggle(clef, v)}
+            trackColor={{ false: c.surfaceMuted, true: c.primary }}
+            thumbColor={theme.dark ? c.surfaceElevated : '#ffffff'}
+          />
         </View>
         {enabled && (
           <>
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: c.divider }]} />
             <View style={styles.row}>
-              <Text style={styles.rowLabel}>{t('settings.lowest')}</Text>
+              <Text style={[styles.rowLabel, { color: c.text }]}>
+                {t('settings.lowest')}
+              </Text>
               <Stepper
                 value={noteLabel(noteFromIndex(min))}
                 canDec={min > scope.lo}
@@ -137,9 +187,11 @@ function ClefCard({
                 onInc={() => setMin(min + 1)}
               />
             </View>
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: c.divider }]} />
             <View style={styles.row}>
-              <Text style={styles.rowLabel}>{t('settings.highest')}</Text>
+              <Text style={[styles.rowLabel, { color: c.text }]}>
+                {t('settings.highest')}
+              </Text>
               <Stepper
                 value={noteLabel(noteFromIndex(max))}
                 canDec={max > min}
@@ -157,6 +209,17 @@ function ClefCard({
 
 export default function SettingsScreen({ settings, onChange }: Props) {
   const t = useT();
+  const theme = useTheme();
+  const c = theme.colors;
+  const sectionTitleStyle = [styles.sectionTitle, { color: c.textMuted }];
+  const cardStyle = [styles.card, { backgroundColor: c.surface }];
+  const rowLabelStyle = [styles.rowLabel, { color: c.text }];
+  const hintStyle = [styles.hint, { color: c.textMuted }];
+  const dividerStyle = [styles.divider, { backgroundColor: c.divider }];
+  const switchColors = {
+    trackColor: { false: c.surfaceMuted, true: c.primary },
+    thumbColor: theme.dark ? c.surfaceElevated : '#ffffff',
+  };
 
   function set(patch: Partial<Settings>) {
     onChange({ ...settings, ...patch });
@@ -170,16 +233,19 @@ export default function SettingsScreen({ settings, onChange }: Props) {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView
+      style={{ backgroundColor: c.background }}
+      contentContainerStyle={styles.content}
+    >
       <View style={styles.inner}>
       <ClefCard settings={settings} clef="treble" set={set} toggle={toggleClef} />
       <ClefCard settings={settings} clef="bass" set={set} toggle={toggleClef} />
-      <Text style={styles.hint}>{t('settings.rangeHint')}</Text>
+      <Text style={hintStyle}>{t('settings.rangeHint')}</Text>
 
-      <Text style={styles.sectionTitle}>{t('settings.difficulty')}</Text>
-      <View style={styles.card}>
+      <Text style={sectionTitleStyle}>{t('settings.difficulty')}</Text>
+      <View style={cardStyle}>
         <View style={styles.colRow}>
-          <Text style={styles.rowLabel}>{t('settings.notes')}</Text>
+          <Text style={rowLabelStyle}>{t('settings.notes')}</Text>
           <Segmented
             value={settings.difficulty}
             onChange={(v) => set({ difficulty: v })}
@@ -189,33 +255,51 @@ export default function SettingsScreen({ settings, onChange }: Props) {
             }))}
           />
         </View>
-        <View style={styles.divider} />
+        <View style={dividerStyle} />
         <View style={styles.row}>
-          <Text style={styles.rowLabel}>{t('settings.hardcore')}</Text>
+          <Text style={rowLabelStyle}>{t('settings.hardcore')}</Text>
           <Switch
             value={settings.hardcore}
             onValueChange={(v) => set({ hardcore: v })}
+            {...switchColors}
           />
         </View>
       </View>
-      <Text style={styles.hint}>{t('settings.difficultyHint')}</Text>
+      <Text style={hintStyle}>{t('settings.difficultyHint')}</Text>
 
-      <Text style={styles.sectionTitle}>{t('settings.sound')}</Text>
-      <View style={styles.card}>
+      <Text style={sectionTitleStyle}>{t('settings.sound')}</Text>
+      <View style={cardStyle}>
         <View style={styles.row}>
-          <Text style={styles.rowLabel}>{t('settings.playSound')}</Text>
+          <Text style={rowLabelStyle}>{t('settings.playSound')}</Text>
           <Switch
             value={settings.sound}
             onValueChange={(v) => set({ sound: v })}
+            {...switchColors}
           />
         </View>
       </View>
-      <Text style={styles.hint}>{t('settings.soundHint')}</Text>
+      <Text style={hintStyle}>{t('settings.soundHint')}</Text>
 
-      <Text style={styles.sectionTitle}>{t('settings.orientation')}</Text>
-      <View style={styles.card}>
+      <Text style={sectionTitleStyle}>{t('settings.appearance')}</Text>
+      <View style={cardStyle}>
         <View style={styles.colRow}>
-          <Text style={styles.rowLabel}>{t('settings.rotation')}</Text>
+          <Text style={rowLabelStyle}>{t('settings.colorMode')}</Text>
+          <Segmented
+            value={settings.colorMode}
+            onChange={(v) => set({ colorMode: v })}
+            options={COLOR_MODE_VALUES.map((v) => ({
+              value: v,
+              label: t(`colorMode.${v}`),
+            }))}
+          />
+        </View>
+      </View>
+      <Text style={hintStyle}>{t('settings.colorModeHint')}</Text>
+
+      <Text style={sectionTitleStyle}>{t('settings.orientation')}</Text>
+      <View style={cardStyle}>
+        <View style={styles.colRow}>
+          <Text style={rowLabelStyle}>{t('settings.rotation')}</Text>
           <Segmented
             value={settings.rotation}
             onChange={(v) => set({ rotation: v })}
@@ -226,12 +310,12 @@ export default function SettingsScreen({ settings, onChange }: Props) {
           />
         </View>
       </View>
-      <Text style={styles.hint}>{t('settings.rotationHint')}</Text>
+      <Text style={hintStyle}>{t('settings.rotationHint')}</Text>
 
-      <Text style={styles.sectionTitle}>{t('settings.language')}</Text>
-      <View style={styles.card}>
+      <Text style={sectionTitleStyle}>{t('settings.language')}</Text>
+      <View style={cardStyle}>
         <View style={styles.colRow}>
-          <Text style={styles.rowLabel}>{t('settings.language')}</Text>
+          <Text style={rowLabelStyle}>{t('settings.language')}</Text>
           <Segmented
             value={settings.language}
             onChange={(v) =>
@@ -243,16 +327,17 @@ export default function SettingsScreen({ settings, onChange }: Props) {
             }))}
           />
         </View>
-        <View style={styles.divider} />
+        <View style={dividerStyle} />
         <View style={styles.row}>
-          <Text style={styles.rowLabel}>{t('settings.germanNotation')}</Text>
+          <Text style={rowLabelStyle}>{t('settings.germanNotation')}</Text>
           <Switch
             value={settings.germanNotation}
             onValueChange={(v) => set({ germanNotation: v })}
+            {...switchColors}
           />
         </View>
       </View>
-      <Text style={styles.hint}>{t('settings.germanNotationHint')}</Text>
+      <Text style={hintStyle}>{t('settings.germanNotationHint')}</Text>
       </View>
     </ScrollView>
   );
