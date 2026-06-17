@@ -58,21 +58,24 @@
       a.play:active {
         opacity: 0.85;
       }
-      .repo-link {
+      .footer-links {
         position: fixed;
         left: 0;
         right: 0;
         bottom: 18px;
+        display: flex;
+        justify-content: center;
+        gap: 18px;
         text-align: center;
       }
-      .repo-link a {
+      .footer-links a {
         color: #c9bfe0;
         font-size: 14px;
         text-decoration: underline;
         text-underline-offset: 3px;
         opacity: 0.82;
       }
-      .repo-link a:active {
+      .footer-links a:active {
         opacity: 0.65;
       }
     </style>
@@ -88,10 +91,11 @@
       </p>
       <a class="play" href="play/">Play</a>
     </div>
-    <div class="repo-link">
+    <div class="footer-links">
       <a href="https://github.com/henrikerstad/witch-note" target="_blank" rel="noopener">
         GitHub
       </a>
+      <a href="privacy.html">Privacy Policy</a>
     </div>
   </body>
 </html>
