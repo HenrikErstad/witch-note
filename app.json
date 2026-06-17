@@ -28,7 +28,7 @@
       "output": "single"
     },
     "experiments": {
-      "baseUrl": "/witch-note/play"
+      "baseUrl": "/play"
     },
     "plugins": [
       "expo-font",
