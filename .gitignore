@@ -39,3 +39,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# generated store assets (screenshots captured via scripts/store-shots.js)
+/store-screenshots/
+/store-assets/
+/scripts/store-shots.js
+/scripts/gen-feature-graphic.js
