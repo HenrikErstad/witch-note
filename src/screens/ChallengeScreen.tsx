@@ -22,6 +22,7 @@ import {
   HISTORY_LIMIT,
   loadChallenge,
   saveChallenge,
+  runScore,
 } from '../storage';
 
 interface Props {
@@ -38,13 +39,12 @@ function accuracy(s: BestScore): number {
   return s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0;
 }
 
-// Higher correct count wins; accuracy breaks ties.
+// Higher score (correct weighted by accuracy) wins; raw correct count breaks ties.
 function beats(run: BestScore, best: BestScore | null): boolean {
   if (!best) return run.total > 0;
-  return (
-    run.correct > best.correct ||
-    (run.correct === best.correct && accuracy(run) > accuracy(best))
-  );
+  const runPts = runScore(run);
+  const bestPts = runScore(best);
+  return runPts > bestPts || (runPts === bestPts && run.correct > best.correct);
 }
 
 
@@ -173,6 +173,7 @@ export default function ChallengeScreen({ settings }: Props) {
           {best
             ? t('challenge.best', {
                 level: t(`difficulty.${settings.difficulty}`),
+                score: runScore(best),
                 correct: best.correct,
                 accuracy: accuracy(best),
               })
@@ -216,6 +217,12 @@ export default function ChallengeScreen({ settings }: Props) {
           <Text style={[styles.resultTitle, { color: c.textMuted }]}>
             {t('challenge.thisRun')}
           </Text>
+          <Text style={[styles.scoreValue, { color: challengeColors.title }]}>
+            {runScore(result)}
+          </Text>
+          <Text style={[styles.scoreLabel, { color: c.textMuted }]}>
+            {t('battle.score')}
+          </Text>
           <View style={styles.resultStats}>
             <View style={styles.stat}>
               <Text style={[styles.statValue, { color: challengeColors.title }]}>
@@ -238,7 +245,7 @@ export default function ChallengeScreen({ settings }: Props) {
         <Text style={[styles.prevBest, { color: c.textMuted }]}>
           {t('challenge.previousBest')}:{' '}
           {prevBest
-            ? `${prevBest.correct} · ${accuracy(prevBest)}%`
+            ? `${runScore(prevBest)} · ${prevBest.correct} · ${accuracy(prevBest)}%`
             : t('challenge.none')}
         </Text>
 
@@ -247,7 +254,7 @@ export default function ChallengeScreen({ settings }: Props) {
             {t('challenge.history', { n: runs.length })}
           </Text>
           <ScoreGraph
-            scores={runs.map((r) => r.correct)}
+            scores={runs.map(runScore)}
             width={Math.min(width - 56, 360)}
             color={theme.dark ? c.primary : '#e0935a'}
           />
@@ -397,6 +404,21 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: 14,
+  },
+  scoreValue: {
+    fontSize: 52,
+    fontWeight: '800',
+    color: '#c2691c',
+    lineHeight: 56,
+  },
+  scoreLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#8e8e93',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginTop: 2,
+    marginBottom: 16,
   },
   resultStats: {
     flexDirection: 'row',

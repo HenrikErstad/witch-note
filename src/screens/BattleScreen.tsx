@@ -21,6 +21,7 @@ import { useNotePlayback } from '../useNotePlayback';
 import { useT } from '../i18n';
 import { MAX_CONTENT_WIDTH, PHONE_CONTENT_WIDTH } from '../layout';
 import { useTheme } from '../theme';
+import { runScore } from '../storage';
 
 interface Props {
   settings: Settings;
@@ -221,15 +222,14 @@ export default function BattleScreen({ settings }: Props) {
   }
 
   if (phase === 'results') {
-    const best = results.reduce(
-      (b, r, i) =>
-        r.correct > results[b].correct ||
-        (r.correct === results[b].correct &&
-          accuracy(r) > accuracy(results[b]))
-          ? i
-          : b,
-      0
-    );
+    // Highest score (correct weighted by accuracy) wins; raw correct breaks ties.
+    const best = results.reduce((b, r, i) => {
+      const rPts = runScore(r);
+      const bPts = runScore(results[b]);
+      return rPts > bPts || (rPts === bPts && r.correct > results[b].correct)
+        ? i
+        : b;
+    }, 0);
     return (
       <ScrollView
         style={{ backgroundColor: c.background }}
@@ -258,6 +258,12 @@ export default function BattleScreen({ settings }: Props) {
                 </Text>
                 {isWinner && <Text style={styles.crown}>{'👑'}</Text>}
               </View>
+              <Text style={[styles.scoreValue, { color: battleColors.title }]}>
+                {runScore(r)}
+              </Text>
+              <Text style={[styles.scoreLabel, { color: c.textMuted }]}>
+                {t('battle.score')}
+              </Text>
               <View style={styles.resultStats}>
                 <View style={styles.stat}>
                   <Text style={[styles.statValue, { color: battleColors.title }]}>
@@ -525,6 +531,21 @@ const styles = StyleSheet.create({
   },
   crown: {
     fontSize: 18,
+  },
+  scoreValue: {
+    fontSize: 40,
+    fontWeight: '800',
+    color: '#5e5ce6',
+    lineHeight: 44,
+  },
+  scoreLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#8e8e93',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginTop: 2,
+    marginBottom: 12,
   },
   resultStats: {
     flexDirection: 'row',
