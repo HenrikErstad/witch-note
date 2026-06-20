@@ -11,7 +11,6 @@
     },
     "android": {
       "package": "com.luddig.witchnote",
-      "versionCode": 2,
       "adaptiveIcon": {
         "backgroundColor": "#12051f",
         "foregroundImage": "./assets/android-icon-foreground.png",
