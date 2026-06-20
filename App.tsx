@@ -30,6 +30,8 @@ import BattleScreen from './src/screens/BattleScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
+// Fade the splash out (rather than cutting) once the app is ready.
+SplashScreen.setOptions({ fade: true, duration: 300 });
 
 type Screen = 'home' | 'practice' | 'challenge' | 'battle' | 'settings';
 

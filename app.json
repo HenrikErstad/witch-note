@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true
     },
@@ -32,7 +32,21 @@
     },
     "plugins": [
       "expo-font",
-      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/logo-monochrome-inverted.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#f2f2f7",
+          "dark": {
+            "image": "./assets/android-icon-monochrome.png",
+            "imageWidth": 200,
+            "resizeMode": "contain",
+            "backgroundColor": "#12051f"
+          }
+        }
+      ],
       [
         "expo-audio",
         {
