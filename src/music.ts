@@ -154,6 +154,7 @@ export interface Settings {
   rotation: RotationMode; // lock to portrait/landscape, or follow the device
   language: LangSetting; // 'system' follows the device locale
   colorMode: ColorModeSetting; // 'system' follows the device appearance
+  statsUnlocked: boolean; // hidden stats button, revealed by tapping the version
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -170,6 +171,7 @@ export const DEFAULT_SETTINGS: Settings = {
   rotation: 'auto',
   language: 'system',
   colorMode: 'system',
+  statsUnlocked: false,
 };
 
 export function clefRangeBounds(s: Settings, clef: Clef): { min: number; max: number } {

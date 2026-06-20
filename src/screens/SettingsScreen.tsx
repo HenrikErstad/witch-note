@@ -6,7 +6,9 @@ import {
   Pressable,
   StyleSheet,
   ScrollView,
+  Alert,
 } from 'react-native';
+import Constants from 'expo-constants';
 import {
   Settings,
   RotationMode,
@@ -19,6 +21,16 @@ import {
 import { useT, LangSetting, resolveLang } from '../i18n';
 import { MAX_CONTENT_WIDTH } from '../layout';
 import { ColorModeSetting, useTheme } from '../theme';
+import { BestScore, ChallengeData, loadChallenge } from '../storage';
+
+// App version, shown in the footer. Tapping it repeatedly reveals the stats button.
+const APP_VERSION = Constants.expoConfig?.version ?? '?';
+// Number of taps on the version number that reveals the hidden stats button.
+const UNLOCK_TAPS = 7;
+const DIFFICULTIES: Difficulty[] = ['easy', 'intermediate', 'expert'];
+
+// Smallest span (highest - lowest, in diatonic steps) a clef's range may shrink to.
+const MIN_RANGE = 2;
 
 const ROTATION_VALUES: RotationMode[] = ['portrait', 'landscape', 'auto'];
 const DIFFICULTY_VALUES: Difficulty[] = ['easy', 'intermediate', 'expert'];
@@ -182,7 +194,7 @@ function ClefCard({
               <Stepper
                 value={noteLabel(noteFromIndex(min))}
                 canDec={min > scope.lo}
-                canInc={min < max}
+                canInc={min < max - MIN_RANGE}
                 onDec={() => setMin(min - 1)}
                 onInc={() => setMin(min + 1)}
               />
@@ -194,7 +206,7 @@ function ClefCard({
               </Text>
               <Stepper
                 value={noteLabel(noteFromIndex(max))}
-                canDec={max > min}
+                canDec={max > min + MIN_RANGE}
                 canInc={max < scope.hi}
                 onDec={() => setMax(max - 1)}
                 onInc={() => setMax(max + 1)}
@@ -230,6 +242,47 @@ export default function SettingsScreen({ settings, onChange }: Props) {
     const next = { ...settings, [clef]: value };
     if (!next.treble && !next.bass) return;
     onChange(next);
+  }
+
+  // Hidden stats: tap the version number UNLOCK_TAPS times, then confirm.
+  const tapCount = React.useRef(0);
+  function onVersionPress() {
+    if (settings.statsUnlocked) return;
+    tapCount.current += 1;
+    if (tapCount.current < UNLOCK_TAPS) return;
+    tapCount.current = 0;
+    Alert.alert(t('settings.unlockTitle'), t('settings.unlockMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('settings.unlockConfirm'), onPress: () => set({ statsUnlocked: true }) },
+    ]);
+  }
+
+  async function showStats() {
+    const data: ChallengeData = await loadChallenge();
+    const lines: string[] = [];
+    let totalRuns = 0;
+    for (const d of DIFFICULTIES) {
+      const runs = data.history[d] ?? [];
+      totalRuns += runs.length;
+      const best: BestScore | undefined = data.best[d];
+      if (!best && runs.length === 0) continue;
+      const acc =
+        best && best.total > 0 ? Math.round((best.correct / best.total) * 100) : 0;
+      lines.push(
+        t('settings.statsLine', {
+          level: t(`difficulty.${d}`),
+          correct: best?.correct ?? 0,
+          total: best?.total ?? 0,
+          accuracy: acc,
+          runs: runs.length,
+        })
+      );
+    }
+    const body =
+      lines.length === 0
+        ? t('settings.statsEmpty')
+        : `${lines.join('\n')}\n\n${t('settings.statsTotal', { n: totalRuns })}`;
+    Alert.alert(t('settings.statsTitle'), body, [{ text: t('common.ok') }]);
   }
 
   return (
@@ -338,6 +391,29 @@ export default function SettingsScreen({ settings, onChange }: Props) {
         </View>
       </View>
       <Text style={hintStyle}>{t('settings.colorModeHint')}</Text>
+
+      {settings.statsUnlocked && (
+        <>
+          <Text style={sectionTitleStyle}>{t('settings.stats')}</Text>
+          <View style={cardStyle}>
+            <Pressable style={styles.row} onPress={showStats}>
+              <Text style={rowLabelStyle}>{t('settings.stats')}</Text>
+              <Text style={[styles.chevron, { color: c.textSubtle }]}>{'›'}</Text>
+            </Pressable>
+          </View>
+          <Text style={hintStyle}>{t('settings.statsHint')}</Text>
+        </>
+      )}
+
+      <Pressable
+        onPress={onVersionPress}
+        style={styles.versionWrap}
+        accessibilityRole="button"
+      >
+        <Text style={[styles.version, { color: c.textSubtle }]}>
+          {t('settings.version', { v: APP_VERSION })}
+        </Text>
+      </Pressable>
       </View>
     </ScrollView>
   );
@@ -447,5 +523,17 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
     color: '#1c1c1e',
+  },
+  chevron: {
+    fontSize: 22,
+    fontWeight: '400',
+  },
+  versionWrap: {
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  version: {
+    fontSize: 13,
+    fontWeight: '500',
   },
 });
