@@ -2,7 +2,7 @@
   "expo": {
     "name": "Witch Note",
     "slug": "witch-note",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -11,6 +11,7 @@
     },
     "android": {
       "package": "com.luddig.witchnote",
+      "versionCode": 2,
       "adaptiveIcon": {
         "backgroundColor": "#12051f",
         "foregroundImage": "./assets/android-icon-foreground.png",
