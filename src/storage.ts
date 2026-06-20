@@ -75,6 +75,14 @@ export type ChallengeData = {
   history: HistoryByDifficulty;
 };
 
+// A run's score rewards both volume and precision: the number of correct
+// answers weighted by accuracy (correct / total). Equivalent to correct^2 /
+// total, rounded. An empty run scores 0.
+export function runScore(s: { correct: number; total: number }): number {
+  if (s.total <= 0) return 0;
+  return Math.round((s.correct * s.correct) / s.total);
+}
+
 const DIFFICULTIES: Difficulty[] = ['easy', 'intermediate', 'expert'];
 
 function isScore(v: unknown): v is BestScore {
@@ -105,6 +113,15 @@ export async function loadChallenge(): Promise<ChallengeData> {
 export async function saveChallenge(data: ChallengeData): Promise<void> {
   try {
     await AsyncStorage.setItem(CHALLENGE_KEY, JSON.stringify(data));
+  } catch {
+    // best-effort
+  }
+}
+
+// Wipe all challenge bests and history.
+export async function clearChallenge(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(CHALLENGE_KEY);
   } catch {
     // best-effort
   }

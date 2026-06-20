@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -21,7 +21,12 @@ import {
 import { useT, LangSetting, resolveLang } from '../i18n';
 import { MAX_CONTENT_WIDTH } from '../layout';
 import { ColorModeSetting, useTheme } from '../theme';
-import { BestScore, ChallengeData, loadChallenge } from '../storage';
+import {
+  ChallengeData,
+  loadChallenge,
+  clearChallenge,
+  runScore,
+} from '../storage';
 
 // App version, shown in the footer. Tapping it repeatedly reveals the stats button.
 const APP_VERSION = Constants.expoConfig?.version ?? '?';
@@ -245,7 +250,7 @@ export default function SettingsScreen({ settings, onChange }: Props) {
   }
 
   // Hidden stats: tap the version number UNLOCK_TAPS times, then confirm.
-  const tapCount = React.useRef(0);
+  const tapCount = useRef(0);
   function onVersionPress() {
     if (settings.statsUnlocked) return;
     tapCount.current += 1;
@@ -257,33 +262,33 @@ export default function SettingsScreen({ settings, onChange }: Props) {
     ]);
   }
 
-  async function showStats() {
-    const data: ChallengeData = await loadChallenge();
-    const lines: string[] = [];
-    let totalRuns = 0;
-    for (const d of DIFFICULTIES) {
-      const runs = data.history[d] ?? [];
-      totalRuns += runs.length;
-      const best: BestScore | undefined = data.best[d];
-      if (!best && runs.length === 0) continue;
-      const acc =
-        best && best.total > 0 ? Math.round((best.correct / best.total) * 100) : 0;
-      lines.push(
-        t('settings.statsLine', {
-          level: t(`difficulty.${d}`),
-          correct: best?.correct ?? 0,
-          total: best?.total ?? 0,
-          accuracy: acc,
-          runs: runs.length,
-        })
-      );
-    }
-    const body =
-      lines.length === 0
-        ? t('settings.statsEmpty')
-        : `${lines.join('\n')}\n\n${t('settings.statsTotal', { n: totalRuns })}`;
-    Alert.alert(t('settings.statsTitle'), body, [{ text: t('common.ok') }]);
+  // Once unlocked, load the challenge data to display inline.
+  const [stats, setStats] = useState<ChallengeData | null>(null);
+  useEffect(() => {
+    if (settings.statsUnlocked) loadChallenge().then(setStats);
+  }, [settings.statsUnlocked]);
+
+  function resetStats() {
+    Alert.alert(t('settings.resetTitle'), t('settings.resetMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('settings.resetConfirm'),
+        style: 'destructive',
+        onPress: async () => {
+          await clearChallenge();
+          setStats({ best: {}, history: {} });
+        },
+      },
+    ]);
   }
+
+  // Difficulties that have a recorded best or run history, plus the run total.
+  const statsRows = (stats ? DIFFICULTIES : [])
+    .map((d) => ({ d, best: stats!.best[d], runs: stats!.history[d] ?? [] }))
+    .filter((r) => r.best || r.runs.length > 0);
+  const totalRuns = stats
+    ? DIFFICULTIES.reduce((n, d) => n + (stats.history[d]?.length ?? 0), 0)
+    : 0;
 
   return (
     <ScrollView
@@ -396,12 +401,52 @@ export default function SettingsScreen({ settings, onChange }: Props) {
         <>
           <Text style={sectionTitleStyle}>{t('settings.stats')}</Text>
           <View style={cardStyle}>
-            <Pressable style={styles.row} onPress={showStats}>
-              <Text style={rowLabelStyle}>{t('settings.stats')}</Text>
-              <Text style={[styles.chevron, { color: c.textSubtle }]}>{'›'}</Text>
-            </Pressable>
+            {statsRows.length === 0 ? (
+              <View style={styles.row}>
+                <Text style={[styles.statsEmpty, { color: c.textMuted }]}>
+                  {t('settings.statsEmpty')}
+                </Text>
+              </View>
+            ) : (
+              <>
+                {statsRows.map(({ d, best }, i) => {
+                  const acc =
+                    best && best.total > 0
+                      ? Math.round((best.correct / best.total) * 100)
+                      : 0;
+                  return (
+                    <View key={d}>
+                      {i > 0 && <View style={dividerStyle} />}
+                      <View style={styles.row}>
+                        <Text style={rowLabelStyle}>{t(`difficulty.${d}`)}</Text>
+                        <Text style={[styles.statsValue, { color: c.textSecondary }]}>
+                          {best
+                            ? `${runScore(best)} · ${best.correct}/${best.total} · ${acc}%`
+                            : '—'}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })}
+                <View style={dividerStyle} />
+                <View style={styles.row}>
+                  <Text style={rowLabelStyle}>{t('settings.statsTotal')}</Text>
+                  <Text style={[styles.statsValue, { color: c.textSecondary }]}>
+                    {totalRuns}
+                  </Text>
+                </View>
+              </>
+            )}
           </View>
           <Text style={hintStyle}>{t('settings.statsHint')}</Text>
+
+          <View style={[cardStyle, { marginTop: 16 }]}>
+            <Pressable style={styles.row} onPress={resetStats}>
+              <Text style={[styles.rowLabel, { color: c.danger }]}>
+                {t('settings.resetStats')}
+              </Text>
+            </Pressable>
+          </View>
         </>
       )}
 
@@ -524,9 +569,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1c1c1e',
   },
-  chevron: {
-    fontSize: 22,
-    fontWeight: '400',
+  statsValue: {
+    fontSize: 15,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
+  },
+  statsEmpty: {
+    fontSize: 15,
   },
   versionWrap: {
     alignItems: 'center',
